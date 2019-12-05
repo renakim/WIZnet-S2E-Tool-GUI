@@ -24,8 +24,9 @@ from WIZUDPSock import WIZUDPSock
 from WIZ750CMDSET import WIZ750CMDSET
 from WIZ752CMDSET import WIZ752CMDSET
 from WIZ2000CMDSET import WIZ2000CMDSET
-from WIZMakeCMD import WIZMakeCMD, version_compare, ONE_PORT_DEV, TWO_PORT_DEV
+from WIZMakeCMD import WIZMakeCMD, ONE_PORT_DEV, TWO_PORT_DEV
 from wizsocket.TCPClient import TCPClient
+from utils import compare_version
 # from CertUploadThread import CertUploadThread
 
 OP_SEARCHALL = 1
@@ -41,7 +42,7 @@ SOCK_OPEN_STATE = 3
 SOCK_CONNECTTRY_STATE = 4
 SOCK_CONNECT_STATE = 5
 
-VERSION = 'V1.1.0'
+VERSION = 'V1.2.0 Dev'
 
 def resource_path(relative_path):
     # Get absolute path to resource, works for dev and for PyInstaller
@@ -441,7 +442,7 @@ class WIZWindow(QMainWindow, main_window):
     # 펌웨어 버전 별 오브젝트 설정
     def object_config_for_version(self):
         if 'WIZ750' in self.curr_dev: 
-            if version_compare('1.2.0', self.curr_ver) <= 0:
+            if compare_version('1.2.0', self.curr_ver) <= 0:
                 # setcmd['TR'] = self.tcp_timeout.text()
                 self.tcp_timeout.setEnabled(True)
             else:
@@ -1454,7 +1455,7 @@ class WIZWindow(QMainWindow, main_window):
                 setcmd['SC'] = upper_val + lower_val
 
             if 'WIZ750' in self.curr_dev: 
-                if version_compare('1.2.0', self.curr_ver) <= 0:
+                if compare_version('1.2.0', self.curr_ver) <= 0:
                     setcmd['TR'] = self.tcp_timeout.text()
                 else:
                     pass
@@ -1582,28 +1583,8 @@ class WIZWindow(QMainWindow, main_window):
         # print('setcmd:', setcmd)
         return setcmd
 
-    # copy current cert to clipboard
-    # def btn_cert_copy_clipboard_clicked(self):
-    #     cert = self.certificate_detail.toPlainText()
-    #     try:
-    #         clip = Tk()
-    #         clip.withdraw()
-    #         clip.clipboard_clear()
-    #         clip.clipboard_append(cert)
-    #         clip.update()
-    #         clip.destroy()
-    #     except Exception as e:
-    #         print('[ERROR] btn_cert_copy_clipboard_clicked(): %r' % e)
-
-    def get_certificate_from_device(self):
-        pass
-    
     def btn_cert_update_clicked(self):
         self.cert_update_over_tcp()
-        # if self.cert_tcp_client.isChecked():
-        #     self.cert_update_over_tcp()
-        # elif self.cert_cloud.isChecked():
-        #     pass
 
     def cert_update_over_tcp(self):
         print('cert_update_over_tcp()')
@@ -1620,68 +1601,6 @@ class WIZWindow(QMainWindow, main_window):
         else:
             self.statusbar.showMessage(' Certificate update warning.')
             self.msg_upload_warning(self.localip_addr)
-
-    # def update_device_cert(self):
-    #     print('update_device_cert()')
-    #     self.selected_devinfo()
-    #     mac_addr = self.curr_mac
-
-    #     if len(self.searchcode_input.text()) == 0:
-    #         self.code = " "
-    #     else:
-    #         self.code = self.searchcode_input.text()
-
-    #     # certificate channel type
-    #     cert = self.certificate_detail.toPlainText()
-    #     if self.cert_tcp_client.isChecked():
-    #         mode_cmd = 'TC'
-    #     elif self.cert_cloud.isChecked():
-    #         mode_cmd = 'WC'
-
-    #     # Certificate update
-    #     try: 
-    #         if self.broadcast.isChecked():
-    #             self.t_certup = CertUploadThread(self.conf_sock, mac_addr, self.code, self.encoded_setting_pw, cert, None, None, self.curr_dev, mode_cmd)
-    #         elif self.unicast_ip.isChecked():
-    #             ip_addr = self.search_ipaddr.text()
-    #             port = int(self.search_port.text())
-    #             self.t_certup = CertUploadThread(self.conf_sock, mac_addr, self.code, self.encoded_setting_pw, cert, ip_addr, port, self.curr_dev, mode_cmd)
-    #         self.t_certup.uploading_size.connect(self.pgbar.setValue)
-    #         self.t_certup.upload_result.connect(self.update_result)
-    #         self.t_certup.error_flag.connect(self.update_error)
-    #         try:
-    #             self.t_certup.start()
-    #         except Exception as e:
-    #             print('update_device_cert() thread start error', e)
-    #             self.update_result(-1)
-    #     except Exception as e:
-    #         print('update_device_cert() error', e)
-
-    # def get_certificate_from_server(self):
-    #     self.clear_certificate()
-    #     # ?: need host address verify or check if host has SSL certificate
-    #     try: 
-    #         url = self.cert_server.text()
-    #         addr = urlsplit(url).hostname
-    #         port = 443
-    #     except Exception as e:
-    #         print('[ERROR] get_certificate_from_server() get addr', e)
-
-    #     try:
-    #         # TODO: CHECK ssl_version
-    #         cert = ssl.get_server_certificate((addr, port))
-    #         self.certificate_detail.setText(cert)
-    #         # certificate size
-    #         self.cert_size.setText(str(len(cert)))
-    #         self.statusbar.showMessage("")
-
-    #         # TODO: 다운받은 certificate를 디바이스로 전송
-    #         # self.msg_certificate_success(file_name)
-
-    #     except Exception as e:
-    #         self.certificate_detail.setText('Fail to get certificate from server.\nPlease check the address')
-    #         self.statusbar.showMessage(' Warning: fail to get certificate from server.')
-    #         print('[ERROR] get_certificate_from_server():', e)
 
     def clear_certificate(self):
         self.certificate_detail.setText("")
@@ -1760,10 +1679,6 @@ class WIZWindow(QMainWindow, main_window):
                 pass
         except Exception as e:
             print('[ERROR] encode_setting_pw(): %r' % e)
-
-    # from device?
-    def check_setting_pw(self):
-        pass
 
     def do_setting(self):
         self.disable_object()
@@ -1881,7 +1796,6 @@ class WIZWindow(QMainWindow, main_window):
                 self.fill_devinfo(clicked_mac)
             except Exception as e:
                 print('get_setting_result() error:', e)
-                
 
             self.dev_clicked()
         elif resp_len == -1:
@@ -1915,7 +1829,11 @@ class WIZWindow(QMainWindow, main_window):
     def update_result(self, result):
         if result < 0:
             # self.statusbar.showMessage(' Firmware update failed.')
-            self.msg_upload_failed()
+            if result == -4: # boot/app version error
+                self.do_reset()                
+                self.msg_upload_failed("The device\'s Boot firmware version is incompatible with the selected Application firmware version.\n\nThe device will reset.")
+            else:
+                self.msg_upload_failed("Please check the device.")
         elif result > 0:
             self.statusbar.showMessage(' Firmware update complete!')
             print('FW Update OK')
@@ -1926,11 +1844,11 @@ class WIZWindow(QMainWindow, main_window):
         self.pgbar.hide()
 
     def update_error(self, error):
+        print('update_error()', error)
+
         try:
             if self.t_fwup.isRunning():
                 self.t_fwup.terminate()
-            if self.t_certup.isRunning():
-                self.t_certup.terminate()
         except Exception as e:
             print('update_error() error', e)
 
@@ -1941,7 +1859,8 @@ class WIZWindow(QMainWindow, main_window):
             self.msg_connection_failed()
         elif error == -3:
             self.statusbar.showMessage(' Firmware update error.')
-        # self.msg_upload_failed()
+        elif error == -4:
+            self.statusbar.showMessage(' The device\'s Boot firmware version is incompatible with the selected Application firmware version.')
 
     # 'FW': firmware upload
     def firmware_update(self, filename, filesize):
@@ -2046,7 +1965,7 @@ class WIZWindow(QMainWindow, main_window):
     def reset_result(self, resp_len):
         if resp_len > 0:
             self.statusbar.showMessage(' Reset complete.')
-            self.msg_reset_seccess()
+            # self.msg_reset_seccess()
             if self.isConnected and self.unicast_ip.isChecked():
                 self.conf_sock.shutdown()
         elif resp_len < 0:
@@ -2138,13 +2057,6 @@ class WIZWindow(QMainWindow, main_window):
             else:
                 self.encode_setting_pw(text, mode)
     
-    # def input_certificate_server(self):
-    #     text, okbtn = QInputDialog.getText(self, "Update certificate", "Input the host address", QLineEdit.Normal, "")
-    #     if okbtn:
-    #         print('input_certificate_server()', text, len(text))
-    #         # TODO: certificate update function
-    #         self.get_certificate_from_server(text)
-
     # To set the wait time when no response from the device when searching
     def input_search_wait_time(self):        
         self.search_wait_time, okbtn = QInputDialog.getInt(self, "Set the wating time for search", 
@@ -2168,7 +2080,6 @@ class WIZWindow(QMainWindow, main_window):
         else:
             # self.do_search_retry(1)
             pass
-
 
     def about_info(self):
         msgbox = QMessageBox(self)
@@ -2254,13 +2165,13 @@ class WIZWindow(QMainWindow, main_window):
         msgbox.setText("Destination IP is unreachable: %s\nPlease check if the device is in the same subnet with the PC." % dst_ip)
         msgbox.exec_()
 
-    def msg_upload_failed(self):
+    def msg_upload_failed(self, msg):
         msgbox = QMessageBox(self)
         msgbox.setIcon(QMessageBox.Critical)
         msgbox.setWindowTitle("Error: Firmware upload")
-        msgbox.setText("Firmware update failed.\nPlease check the device's status.")
+        msgbox.setText("Firmware update failed.\n%s" % msg)
         msgbox.exec_()
-
+    
     def msg_upload_success(self):
         msgbox = QMessageBox(self)
         msgbox.question(self, "Firmware upload success", "Firmware update complete!", QMessageBox.Yes)

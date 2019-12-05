@@ -50,6 +50,7 @@ class WIZMSGHandler(QThread):
             self.inputs = [self.sock.sock]
         except Exception as e:
             print('socket error:', e)
+            self.inputs = []
             self.terminate()
 
         self.outputs = []
@@ -216,6 +217,7 @@ class WIZMSGHandler(QThread):
                                 print(
                                     '[ERROR] WIZMSGHandler makecommands(): %r' % e)
                         elif self.opcode is OP_FWUP:
+                            status_version = []
                             for i in range(0, len(replylists)):
                                 if b'MA' in replylists[i][:2]:
                                     dest_mac = self.dest_mac
@@ -228,6 +230,14 @@ class WIZMSGHandler(QThread):
                                     # sys.stdout.write('self.isvalid is True\r\n')
                                     param = replylists[i][2:].split(b':')
                                     self.reply = replylists[i][2:]
+
+                                if b'ST' in replylists[i][:2]:
+                                    status_version.append(replylists[i][2:].decode())
+                                    self.reply = status_version
+                                if b'VR' in replylists[i][:2]:
+                                    status_version.append(replylists[i][2:].decode())
+                                    self.reply = status_version
+
                         elif self.opcode is OP_SETCOMMAND:
                             for i in range(0, len(replylists)):
                                 if b'AP' in replylists[i][:2]:

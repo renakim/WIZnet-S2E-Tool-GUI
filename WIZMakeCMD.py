@@ -17,6 +17,8 @@ from WIZUDPSock import WIZUDPSock
 from WIZMSGHandler import WIZMSGHandler
 from WIZArgParser import WIZArgParser
 from FWUploadThread import FWUploadThread
+from utils import compare_version
+
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -32,6 +34,7 @@ OP_FWUP = 6
 # Supported devices
 ONE_PORT_DEV = [
     "WIZ750SR",
+    "WIZ750SR-1xx",
     "WIZ750SR-100",
     "WIZ750SR-105",
     "WIZ750SR-110",
@@ -39,10 +42,7 @@ ONE_PORT_DEV = [
     "WIZ108SR",
 ]
 TWO_PORT_DEV = ["WIZ752SR-12x", "WIZ752SR-120", "WIZ752SR-125"]
-# DEVICE_SERVER = []
-
-# BAUDRATES = [300, 600, 1200, 1800, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 230400, 460800]
-# not use 'UI' and 'EI' on Configuration tool (UART interface(Code))
+Pre_programmed_MCU = ["W7500_S2E", "W7500P_S2E"]
 
 # for pre-search
 cmd_presearch = ["MC", "VR", "MN", "ST", "IM", "OP", "LI", "SM", "GW"]
@@ -62,17 +62,6 @@ cmd_wiz2000 = ['MB', 'SE', 'CE', 'N0', 'N1', 'N2', 'LF', 'AE', 'AP', 'CT', 'AL',
 cmd_1p_default = cmd_ch1
 cmd_1p_advanced = cmd_ch1 + cmd_added
 cmd_2p_default = cmd_ch1 + cmd_ch2
-
-def version_compare(version1, version2):
-    def normalize(v):
-        # return [x for x in re.sub(r'(\.0+)*$','',v).split('.')]
-        return [x for x in re.sub(r"(\.0+\.[dev])*$", "", v).split(".")]
-
-    obj1 = normalize(version1)
-    obj2 = normalize(version2)
-    return (obj1 > obj2) - (obj1 < obj2)
-    # if return value < 0: version2 upper than version1
-
 
 class WIZMakeCMD:
     def __init__(self):
@@ -104,7 +93,7 @@ class WIZMakeCMD:
         cmd_list.append(["PW", idcode])
 
         if devname in ONE_PORT_DEV or "750" in devname:
-            if "750" in devname and version_compare("1.2.0", version) <= 0:
+            if "750" in devname and compare_version("1.2.0", version) <= 0:
                 for cmd in cmd_1p_advanced:
                     cmd_list.append([cmd, ""])
             else:
@@ -140,7 +129,7 @@ class WIZMakeCMD:
                 cmd_list.append([command_list[i], param_list[i]])
 
             if devname in ONE_PORT_DEV or "750" in devname:
-                if "750" in devname and version_compare("1.2.0", version) <= 0:
+                if "750" in devname and compare_version("1.2.0", version) <= 0:
                     for cmd in cmd_1p_advanced:
                         cmd_list.append([cmd, ""])
                 else:

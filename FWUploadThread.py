@@ -1,9 +1,5 @@
 #!/usr/bin/python
 
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from wizsocket.TCPClient import TCPClient
-from WIZUDPSock import WIZUDPSock
-from WIZMSGHandler import WIZMSGHandler
 import binascii
 import re
 import sys
@@ -14,6 +10,12 @@ import threading
 import getopt
 import os
 import subprocess
+
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from wizsocket.TCPClient import TCPClient
+from WIZUDPSock import WIZUDPSock
+from WIZMSGHandler import WIZMSGHandler
+from utils import compare_version
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -57,7 +59,8 @@ class FWUploadThread(QThread):
         self.sentbyte = 0
         self.dest_mac = dest_mac
         self.idcode = idcode
-        self.error_noresponse = 0
+        self.error_noresponse = False
+        self.error_version = False
         self.retrycheck = 0
 
         # if wiz2000
@@ -105,6 +108,59 @@ class FWUploadThread(QThread):
         self.uploading_size.emit(1)
         self.msleep(1000)
 
+    def check_boot_version(self):
+        cmd_list = []
+        self.resp = None
+        # boot mode change: App boot mode
+        cmd_list.append(["MA", self.dest_mac])
+        cmd_list.append(["PW", self.idcode])
+        cmd_list.append(["ST", ""])
+        cmd_list.append(["VR", ""])
+
+        if 'TCP' in self.sock_type:
+            self.wizmsghangler = WIZMSGHandler(
+                self.conf_sock, cmd_list, 'tcp', OP_FWUP, 2)
+        elif 'UDP' in self.sock_type:
+            self.wizmsghangler = WIZMSGHandler(
+                self.conf_sock, cmd_list, 'udp', OP_FWUP, 2)
+
+        # if no reponse from device, retry for several times.
+        for i in range(4):
+            # self.resp = self.wizmsghangler.parseresponse()
+            self.resp = self.wizmsghangler.run()
+            self.msleep(100)
+            if self.resp is not '':
+                break
+
+        # self.uploading_size.emit(1)
+        self.msleep(1000)
+
+        # ! BOOT ?? ?? & boot ??? ???? ? ?? ?? ??
+        # ['1.3.2', 'BOOT'] / all path
+        if not self.check_fw_version(self.resp, self.bin_filename):
+            return -1
+        else:
+            return 1
+
+    def check_fw_version(self, vr_st, filename):
+        print('check_fw_version(1)', vr_st, filename)
+        # Check status & version
+        if 'BOOT' in vr_st[0]:
+            # If boot version is 1.3.x
+            if '1.3.' in vr_st[1]:
+                print('=====>> BOOT', vr_st[1])
+                # Check current boot F/W version with selected app F/W version
+                # ! ??? ?? ==> ?? binary ??? ??? ?? ??? ??
+                file_version = self.bin_filename[-7:-4]
+                print('check_fw_version(2)', file_version)
+                # 130 ?? ??? False
+                if compare_version('130', file_version) > 0:
+                    return False
+                else:
+                    return True
+
+        return True
+
     def sendCmd(self, command):
         cmd_list = []
         self.resp = None
@@ -146,36 +202,47 @@ class FWUploadThread(QThread):
         else:
             self.jumpToApp()
 
-        if 'UDP' in self.sock_type:
-            pass
-        elif 'TCP' in self.sock_type:
-            self.sock_close()
-            self.SocketConfig()
+        # 20191205 WIZ750SR(-1xx) version check
+        if 'WIZ750SR' in self.dev_name or 'WIZ750SR-1xx' in self.dev_name:
+            if 'TCP' in self.sock_type:
+                self.sock_close()
+                self.SocketConfig()
 
-        self.sendCmd('FW')
+            if self.check_boot_version() < 0:
+                self.error_flag.emit(-4)
+                self.error_version = True
 
-        if self.resp is not '' and self.resp is not None:
-            resp = self.resp.decode('utf-8')
-            # print('resp', resp)
-            params = resp.split(':')
-            sys.stdout.write('Dest IP: %s, Dest Port num: %r\r\n' %
-                             (params[0], int(params[1])))
-            self.serverip = params[0]
-            self.serverport = int(params[1])
+        if not self.error_version:
+            if 'TCP' in self.sock_type:
+                self.sock_close()
+                self.SocketConfig()
 
-            self.uploading_size.emit(3)
-        else:
-            print('No response from device. Check the network or device status.')
-            self.error_flag.emit(-1)
-            self.error_noresponse = -1
-        try:
-            self.client = TCPClient(2, params[0], int(params[1]))
-        except:
-            pass
-        try:
-            if self.error_noresponse < 0:
-                pass
+            self.sendCmd('FW')
+
+            if self.resp is not '' and self.resp is not None:
+                resp = self.resp.decode('utf-8')
+                # print('resp', resp)
+                params = resp.split(':')
+                sys.stdout.write('Dest IP: %s, Dest Port num: %r\r\n' %
+                                 (params[0], int(params[1])))
+                self.serverip = params[0]
+                self.serverport = int(params[1])
+
+                self.uploading_size.emit(3)
             else:
+                print('No response from device. Check the network or device status.')
+                self.error_flag.emit(-1)
+                self.error_noresponse = True
+            try:
+                self.client = TCPClient(2, params[0], int(params[1]))
+            except:
+                pass
+        else:
+            if 'TCP' in self.sock_type:
+                self.sock_close()
+
+        try:
+            if not self.error_noresponse and not self.error_version:
                 # sys.stdout.write("%r\r\n" % self.client.state)
                 while True:
                     if self.retrycheck > 6:
@@ -277,13 +344,16 @@ class FWUploadThread(QThread):
                             response = ""
                         break
 
-            print('retrycheck: %d' % self.retrycheck)
+            # print('FWUploadThread run() retrycheck: %d' % self.retrycheck)
 
-            if self.retrycheck > 6 or self.error_noresponse < 0:
+            if self.retrycheck > 6 or self.error_noresponse or self.error_version:
                 sys.stdout.write(
                     'Device [%s] firmware upload fail.\r\n' % (self.dest_mac))
-                self.upload_result.emit(-1)
-            elif self.error_noresponse >= 0:
+                if self.error_noresponse:
+                    self.upload_result.emit(-1)
+                elif self.error_version:
+                    self.upload_result.emit(-4)
+            elif not self.error_noresponse:
                 self.uploading_size.emit(8)
                 sys.stdout.write(
                     'Device [%s] firmware upload success!\r\n' % (self.dest_mac))
@@ -293,6 +363,7 @@ class FWUploadThread(QThread):
                 self.client.shutdown()
                 if 'TCP' in self.sock_type:
                     self.conf_sock.shutdown()
+
         except Exception as e:
             self.error_flag.emit(-3)
             sys.stdout.write('%r\r\n' % e)
@@ -300,7 +371,7 @@ class FWUploadThread(QThread):
             pass
 
     def sock_close(self):
-        # 기존 연결 fin
+        #
         if self.tcp_sock is not None:
             if self.tcp_sock.state is not SOCK_CLOSE_STATE:
                 self.tcp_sock.shutdown()
