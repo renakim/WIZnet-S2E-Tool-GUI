@@ -2,7 +2,6 @@
 
 from wizsocket.TCPClient import TCPClient
 from WIZMakeCMD import WIZMakeCMD, version_compare, ONE_PORT_DEV, TWO_PORT_DEV
-from WIZ2000CMDSET import WIZ2000CMDSET
 from WIZ752CMDSET import WIZ752CMDSET
 from WIZ750CMDSET import WIZ750CMDSET
 from WIZUDPSock import WIZUDPSock
@@ -13,9 +12,6 @@ import time
 import re
 import os
 import subprocess
-import base64
-# import ssl
-# from urllib.parse import urlsplit
 
 # need to install package
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
@@ -88,7 +84,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
         self.wiz750cmdObj = WIZ750CMDSET(1)
         self.wiz752cmdObj = WIZ752CMDSET(1)
-        self.wiz2000cmdObj = WIZ2000CMDSET(1)
         self.wizmakecmd = WIZMakeCMD()
 
         self.dev_profile = {}
@@ -134,9 +129,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
         # Tab information save
         self.userio_tab_text = self.generalTab.tabText(2)
-        self.wiz2000_tab_text = self.generalTab.tabText(3)
-        self.wiz2000_cloud_tab_text = self.generalTab.tabText(4)
-        self.wiz2000_certificate_text = self.generalTab.tabText(5)
         self.ch1_tab_text = self.channel_tab.tabText(1)
 
         # Initial tab
@@ -155,25 +147,12 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         # Button event
         self.btn_search.clicked.connect(self.do_search_normal)
 
-        # WIZ2000: need setting password (setting, reset, upload, factory)
         self.btn_setting.clicked.connect(self.event_setting_clicked)
         self.btn_reset.clicked.connect(self.event_reset_clicked)
 
         # factory reset
-        # WIZ2000: setting or factory two options
         self.btn_factory.clicked.connect(self.event_factory_setting)
         self.btn_factory.triggered[QtWidgets.QAction].connect(self.event_factory_option_clicked)
-
-        # for certificate management
-        self.btn_cert_update.clicked.connect(self.event_certificate_clicked)
-        # self.btn_cert_server_run.clicked.connect(self.get_certificate_from_server)
-        self.btn_cert_save_file.clicked.connect(self.dialog_save_certificate)
-        self.btn_cert_load_file.clicked.connect(self.dialog_load_certificate)
-        self.btn_cert_clear.clicked.connect(self.clear_certificate)
-        # device certificate update
-        self.btn_device_cert_update.clicked.connect(self.btn_cert_update_clicked)
-        # self.btn_cert_copy_clipboard.clicked.connect(self.btn_cert_copy_clipboard_clicked)
-        self.certificate_detail.textChanged.connect(self.event_cert_changed)
 
         # configuration save/load button
         self.btn_saveconfig.clicked.connect(self.dialog_save_file)
@@ -192,14 +171,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.ch2_keepalive_enable.stateChanged.connect(self.event_keepalive)
         self.ip_dhcp.clicked.connect(self.event_ip_alloc)
         self.ip_static.clicked.connect(self.event_ip_alloc)
-
-        # Event: setting password
-        self.enable_setting_pw.stateChanged.connect(self.event_setting_pw)
-        self.show_settingpw.stateChanged.connect(self.event_setpw_show)
-
-        # Event: cloud option
-        self.cloud_enable.stateChanged.connect(self.event_cloud)
-        self.modbus_monitor_config.currentIndexChanged.connect(self.event_modbus_monitor)
 
         # Event: OP mode
         self.ch1_tcpclient.clicked.connect(self.event_opmode)
@@ -386,43 +357,21 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.event_ip_alloc()
         self.event_atmode()
         self.event_keepalive()
-        self.event_cloud()
-        self.event_setting_pw()
-        self.event_localport_fix()
-        self.event_modbus_monitor()
-        self.event_cert_changed()
 
         self.gpio_check()
 
-    def event_certificate_clicked(self):
-        print('event_certificate_clicked')
-        # tab change
-        self.generalTab.setCurrentIndex(4)
-
-    # # button click events
+    # button click events
     def event_setting_clicked(self):
-        if 'WIZ2000' in self.curr_dev:
-            self.input_setting_pw('setting')
-        else:
-            self.do_setting()
+        self.do_setting()
 
     def event_reset_clicked(self):
-        if 'WIZ2000' in self.curr_dev:
-            self.input_setting_pw('reset')
-        else:
-            self.do_reset()
+        self.do_reset()
 
     def event_factory_setting(self):
-        if 'WIZ2000' in self.curr_dev:
-            self.input_setting_pw('factory_setting')
-        else:
-            self.msg_factory_setting()
+        self.msg_factory_setting()
 
     def event_factory_firmware(self):
-        if 'WIZ2000' in self.curr_dev:
-            self.input_setting_pw('factory_firmware')
-        else:
-            self.msg_factory_firmware()
+        self.msg_factory_firmware()
 
     # factory reset options
     # option: factory button / menu 1, menu 2
@@ -436,10 +385,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.event_factory_firmware()
 
     def event_upload_clicked(self):
-        if 'WIZ2000' in self.curr_dev:
-            self.input_setting_pw('upload')
-        else:
-            self.update_btn_clicked()
+        self.update_btn_clicked()
 
     def gpio_check(self):
         gpio_list = ['a', 'b', 'c', 'd']
@@ -460,110 +406,32 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             else:
                 self.tcp_timeout.setEnabled(False)
 
-        if 'WIZ2000' in self.curr_dev:
-            self.tcp_timeout.setEnabled(True)
-            self.factory_setting_action.setEnabled(True)
-            self.factory_firmware_action.setEnabled(True)
-        else:
-            self.factory_setting_action.setEnabled(True)
-            self.factory_firmware_action.setEnabled(False)
+        self.factory_setting_action.setEnabled(True)
+        self.factory_firmware_action.setEnabled(False)
 
     def general_tab_config(self):
-        # for WIZ2000
-        if 'WIZ2000' in self.curr_dev:
-            self.generalTab.insertTab(3, self.wiz2000_tab, self.wiz2000_tab_text)
-            self.generalTab.insertTab(4, self.wiz2000_cloud_tab, self.wiz2000_cloud_tab_text)
-            self.generalTab.insertTab(5, self.wiz2000_certificate_tab,
-                                      self.wiz2000_certificate_text)
+        self.generalTab.removeTab(5)
+        self.generalTab.removeTab(4)
+        self.generalTab.removeTab(3)
 
-            self.generalTab.setTabEnabled(3, True)
-            self.generalTab.setTabEnabled(4, True)
-            self.generalTab.setTabEnabled(5, True)
-            self.ch1_localport_fix.setEnabled(True)
-        else:
-            self.generalTab.removeTab(5)
-            self.generalTab.removeTab(4)
-            self.generalTab.removeTab(3)
-
-            self.ch1_localport_fix.setEnabled(False)
+        self.ch1_localport_fix.setEnabled(False)
 
         # User I/O tab (WIZ750SR)
         if 'WIZ750' in self.curr_dev or 'W7500' in self.curr_dev:
             self.generalTab.insertTab(2, self.userio_tab, self.userio_tab_text)
             self.generalTab.setTabEnabled(2, True)
         else:
-            if 'WIZ2000' in self.curr_dev:
-                if len(self.generalTab) == 6:
-                    self.generalTab.removeTab(2)
-                elif len(self.generalTab) == 5:
-                    pass
-            else:
-                self.generalTab.removeTab(2)
+            self.generalTab.removeTab(2)
 
     def channel_tab_config(self):
         # channel tab config
-        if self.curr_dev in ONE_PORT_DEV or 'WIZ750' in self.curr_dev or 'WIZ2000' in self.curr_dev:
+        if self.curr_dev in ONE_PORT_DEV or 'WIZ750' in self.curr_dev:
             self.channel_tab.removeTab(1)
             self.channel_tab.setTabEnabled(0, True)
         elif self.curr_dev in TWO_PORT_DEV or 'WIZ752' in self.curr_dev:
             self.channel_tab.insertTab(1, self.tab_ch1, self.ch1_tab_text)
             self.channel_tab.setTabEnabled(0, True)
             self.channel_tab.setTabEnabled(1, True)
-
-    def event_cert_changed(self):
-        cert = self.certificate_detail.toPlainText()
-        if len(cert) > 0:
-            self.btn_device_cert_update.setEnabled(True)
-        else:
-            self.btn_device_cert_update.setEnabled(False)
-
-    def event_modbus_monitor(self):
-        if self.modbus_monitor_config.currentIndex() == 0:
-            self.monitor_ch1_id.setEnabled(False)
-            self.monitor_ch2_id.setEnabled(False)
-            self.monitor_ch3_id.setEnabled(False)
-            self.monitor_ch4_id.setEnabled(False)
-        elif self.modbus_monitor_config.currentIndex() == 1:
-            self.monitor_ch1_id.setEnabled(True)
-            self.monitor_ch2_id.setEnabled(False)
-            self.monitor_ch3_id.setEnabled(False)
-            self.monitor_ch4_id.setEnabled(False)
-        elif self.modbus_monitor_config.currentIndex() == 2:
-            self.monitor_ch1_id.setEnabled(True)
-            self.monitor_ch2_id.setEnabled(True)
-            self.monitor_ch3_id.setEnabled(False)
-            self.monitor_ch4_id.setEnabled(False)
-        elif self.modbus_monitor_config.currentIndex() == 3:
-            self.monitor_ch1_id.setEnabled(True)
-            self.monitor_ch2_id.setEnabled(True)
-            self.monitor_ch3_id.setEnabled(True)
-            self.monitor_ch4_id.setEnabled(False)
-        elif self.modbus_monitor_config.currentIndex() == 4:
-            self.monitor_ch1_id.setEnabled(True)
-            self.monitor_ch2_id.setEnabled(True)
-            self.monitor_ch3_id.setEnabled(True)
-            self.monitor_ch4_id.setEnabled(True)
-
-    def event_cloud(self):
-        if self.cloud_enable.isChecked():
-            self.groupbox_cloudinfo.setEnabled(True)
-            self.groupbox_monitor.setEnabled(True)
-            self.event_modbus_monitor()
-        else:
-            self.groupbox_cloudinfo.setEnabled(False)
-            self.groupbox_monitor.setEnabled(False)
-
-    def event_setting_pw(self):
-        if self.enable_setting_pw.isChecked():
-            self.setting_pw.setEnabled(True)
-        elif self.enable_setting_pw.isChecked() is False:
-            self.setting_pw.setEnabled(False)
-
-    def event_localport_fix(self):
-        if self.ch1_localport_fix.isChecked():
-            self.ch1_localport.setEnabled(False)
-        elif self.ch1_localport_fix.isChecked() is False:
-            self.ch1_localport.setEnabled(True)
 
     def event_ip_alloc(self):
         if self.ip_dhcp.isChecked() is True:
@@ -620,12 +488,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         elif self.show_connectpw.isChecked() is False:
             self.connect_pw.setEchoMode(QtWidgets.QLineEdit.Password)
 
-    def event_setpw_show(self):
-        if self.show_settingpw.isChecked() is True:
-            self.setting_pw.setEchoMode(QtWidgets.QLineEdit.Normal)
-        elif self.show_settingpw.isChecked() is False:
-            self.setting_pw.setEchoMode(QtWidgets.QLineEdit.Password)
-
     def event_passwd_enable(self):
         if self.enable_connect_pw.isChecked() is True:
             self.connect_pw.setEnabled(True)
@@ -633,7 +495,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.connect_pw.setEnabled(False)
 
     def event_opmode(self):
-
         if self.ch1_tcpclient.isChecked() is True:
             self.ch1_remote.setEnabled(True)
         elif self.ch1_tcpserver.isChecked() is True:
@@ -1309,129 +1170,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 if 'RR' in dev_data:
                     self.ch2_reconnection.setText(dev_data['RR'])
 
-            # for WIZ2000 device server
-            elif 'WIZ2000' in self.curr_dev:
-                if 'MB' in dev_data:
-                    if dev_data['MB'] == '0':
-                        self.modbus_s2e.setChecked(True)
-                    elif dev_data['MB'] == '1':
-                        self.modbus_rtu_tcp.setChecked(True)
-                    elif dev_data['MB'] == '2':
-                        self.modbus_asci_tcp.setChecked(True)
-                # if 'MM' in dev_data:    # channel 2
-                #     pass
-                if 'SE' in dev_data:    # tls 1.2 option
-                    if dev_data['SE'] == '0':
-                        self.tls_enable.setChecked(False)
-                    elif dev_data['SE'] == '1':
-                        self.tls_enable.setChecked(True)
-
-                # device alias
-                # dev_alias / dev_group
-                if 'AL' in dev_data:
-                    self.dev_alias.setText(dev_data['AL'])
-                if 'GR' in dev_data:
-                    self.dev_group.setText(dev_data['GR'])
-                # TCP connection success msg
-                if 'AM' in dev_data:
-                    self.tcp_success_msg.setCurrentIndex(int(dev_data['AM']))
-                # Local port fix
-                if 'LF' in dev_data:
-                    if dev_data['LF'] == '1':
-                        self.ch1_localport_fix.setChecked(True)
-                    elif dev_data['LF'] == '0':
-                        self.ch1_localport_fix.setChecked(False)
-                # NTP server
-                if 'N0' in dev_data:
-                    self.ntp_server0.setText(dev_data['N0'])
-                if 'N1' in dev_data:
-                    self.ntp_server1.setText(dev_data['N1'])
-                if 'N2' in dev_data:
-                    self.ntp_server2.setText(dev_data['N2'])
-                # cloud options
-                if 'CE' in dev_data:
-                    if dev_data['CE'] == '0':
-                        self.cloud_enable.setChecked(False)
-                    elif dev_data['CE'] == '1':
-                        self.cloud_enable.setChecked(True)
-                # setting password enable
-                if 'AE' in dev_data:
-                    if dev_data['AE'] == '1':
-                        self.enable_setting_pw.setChecked(True)
-                        # setting password
-                        if 'AP' in dev_data:
-                            # print('<AP> parameter:', dev_data['AP'], type(dev_data['AP']), isinstance(dev_data['AP'], type('\xd3M4\xd3M4')))
-                            # print('<AP> parameter b64decode:', base64.b64decode(dev_data['AP'].encode('utf-8')))
-                            # TODO: base64로 인코딩된 string인지 체크
-                            try:
-                                self.curr_setting_pw = base64.b64decode(
-                                    dev_data['AP'].encode('utf-8')).decode()
-                            except Exception as e:
-                                self.logging.error(e)
-                            self.setting_pw.setText(self.curr_setting_pw)
-                    elif dev_data['AE'] == '0':
-                        self.enable_setting_pw.setChecked(False)
-
-                # modbud monitoring
-                if 'CM' in dev_data:
-                    self.modbus_monitor_config.setCurrentIndex(int(dev_data['CM']))
-                    if dev_data['CM'] == '0':
-                        pass
-                    elif dev_data['CM'] == '1':
-                        if 'C0' in dev_data:
-                            self.monitor_ch1_id.setText(dev_data['C0'])
-                    elif dev_data['CM'] == '2':
-                        if 'C0' in dev_data:
-                            self.monitor_ch1_id.setText(dev_data['C0'])
-                        if 'C1' in dev_data:
-                            self.monitor_ch2_id.setText(dev_data['C1'])
-                    elif dev_data['CM'] == '3':
-                        if 'C0' in dev_data:
-                            self.monitor_ch1_id.setText(dev_data['C0'])
-                        if 'C1' in dev_data:
-                            self.monitor_ch2_id.setText(dev_data['C1'])
-                        if 'C2' in dev_data:
-                            self.monitor_ch3_id.setText(dev_data['C2'])
-                    elif dev_data['CM'] == '4':
-                        if 'C0' in dev_data:
-                            self.monitor_ch1_id.setText(dev_data['C0'])
-                        if 'C1' in dev_data:
-                            self.monitor_ch2_id.setText(dev_data['C1'])
-                        if 'C2' in dev_data:
-                            self.monitor_ch3_id.setText(dev_data['C2'])
-                        if 'C3' in dev_data:
-                            self.monitor_ch4_id.setText(dev_data['C3'])
-
-                if 'UP' in dev_data:
-                    try:
-                        value = self.uptime_value(int(dev_data['UP']))
-                        # uptime = time.strftime('%DA%H:%M:%S', time.gmtime(second)
-                        # print('## uptime value:', dev_data['UP'], value)
-                        self.device_uptime.display(value)
-                    except Exception as e:
-                        self.logging.error(e)
-
             self.object_config()
         except Exception as e:
             self.logging.error(e)
             self.msg_error('Get device information error {}'.format(e))
-
-    def uptime_value(self, second):
-        try:
-            day = second / (3600*24)
-            rem = second % (3600*24)
-            hour = rem / 3600
-            rem = rem % 3600
-            mins = rem / 60
-            secs = rem % 60
-
-            if day > 1:
-                val = '%3dd %02d:%02d:%02d' % (day, hour, mins, secs)
-            else:
-                val = '%02d:%02d:%02d' % (hour, mins, secs)
-        except Exception as e:
-            print('[ERROR] get_uptime()', e)
-        return val
 
     def msg_error(self, error):
         msgbox = QtWidgets.QMessageBox(self)
@@ -1475,7 +1217,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # command mode (AT mode)
             if self.at_enable.isChecked() is True:
                 setcmd['TE'] = '1'
-                setcmd['SS'] = self.at_hex1.text() + self.at_hex2.text() + self.at_hex3.text()
+                setcmd['SS'] = self.at_hex1.text() + self.at_hex2.text() \
+                    + self.at_hex3.text()
             elif self.at_enable.isChecked() is False:
                 setcmd['TE'] = '0'
 
@@ -1601,250 +1344,12 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                     setcmd['RA'] = '0'
                 # reconnection - channel 2
                 setcmd['RR'] = self.ch2_reconnection.text()
-
-            # for WIZ2000 device server
-            if 'WIZ2000' in self.curr_dev:
-                # modbus setting (ch1)
-                if self.modbus_s2e.isChecked():
-                    setcmd['MB'] = '0'
-                elif self.modbus_rtu_tcp.isChecked():
-                    setcmd['MB'] = '1'
-                elif self.modbus_asci_tcp.isChecked():
-                    setcmd['MB'] = '2'
-                # modbus setting (ch2)
-                # if 'MM' in dev_data:
-                #     pass
-                # tls 1.2 option
-                if not self.tls_enable.isChecked():
-                    setcmd['SE'] = '0'
-                elif self.tls_enable.isChecked():
-                    setcmd['SE'] = '1'
-                # setting pw
-                if self.enable_setting_pw.isChecked():
-                    setcmd['AE'] = '1'
-                    if self.setting_pw.text():
-                        try:
-                            # print('new Set PW', self.setting_pw.text(), base64.b64encode(
-                            self.setting_pw.text().encode('utf-8').decode()
-                            setcmd['AP'] = base64.b64encode(
-                                self.setting_pw.text().encode('utf-8').decode())
-                        except Exception as e:
-                            self.logging.error(e)
-                    else:
-                        self.logging.info('Setting pw enabled, but empty')
-                # device alias config
-                setcmd['AL'] = self.dev_alias.text()
-                setcmd['GR'] = self.dev_group.text()
-                # tcp auto msg
-                setcmd['AM'] = str(self.tcp_success_msg.currentIndex())
-                # local port fix
-                if not self.ch1_localport_fix.isChecked():
-                    setcmd['LF'] = '0'
-                elif self.ch1_localport_fix.isChecked():
-                    setcmd['LF'] = '1'
-
-                # cloud monitor option
-                if not self.cloud_enable.isChecked():
-                    setcmd['CE'] = '0'
-                elif self.cloud_enable.isChecked():
-                    setcmd['CE'] = '1'
-                    # ntp server
-                    setcmd['N0'] = self.ntp_server0.text()
-                    setcmd['N1'] = self.ntp_server1.text()
-                    setcmd['N2'] = self.ntp_server2.text()
-
-                    # modbus monitoring config
-                    setcmd['CM'] = str(self.modbus_monitor_config.currentIndex())
-                    if self.modbus_monitor_config.currentIndex() == 0:
-                        pass
-                    elif self.modbus_monitor_config.currentIndex() == 1:
-                        setcmd['C0'] = str(self.monitor_ch1_id.text())
-                    elif self.modbus_monitor_config.currentIndex() == 2:
-                        setcmd['C0'] = str(self.monitor_ch1_id.text())
-                        setcmd['C1'] = str(self.monitor_ch2_id.text())
-                    elif self.modbus_monitor_config.currentIndex() == 3:
-                        setcmd['C0'] = str(self.monitor_ch1_id.text())
-                        setcmd['C1'] = str(self.monitor_ch2_id.text())
-                        setcmd['C2'] = str(self.monitor_ch3_id.text())
-                    elif self.modbus_monitor_config.currentIndex() == 4:
-                        setcmd['C0'] = str(self.monitor_ch1_id.text())
-                        setcmd['C1'] = str(self.monitor_ch2_id.text())
-                        setcmd['C2'] = str(self.monitor_ch3_id.text())
-                        setcmd['C3'] = str(self.monitor_ch4_id.text())
         except Exception as e:
             self.logging.error(e)
 
         # print('setcmd:', setcmd)
         return setcmd
 
-    def get_certificate_from_device(self):
-        pass
-
-    def btn_cert_update_clicked(self):
-        self.cert_update_over_tcp()
-        # if self.cert_tcp_client.isChecked():
-        #     self.cert_update_over_tcp()
-        # elif self.cert_cloud.isChecked():
-        #     pass
-
-    def cert_update_over_tcp(self):
-        self.logging.info('cert_update_over_tcp()')
-        if self.unicast_ip.isChecked() and self.isConnected:
-            self.input_setting_pw('update_cert')
-        else:
-            self.update_cert_net_check()
-
-    def update_cert_net_check(self):
-        self.logging.info('update_cert_net_check()')
-        response = self.net_check_ping(self.localip_addr)
-        if response == 0:
-            self.input_setting_pw('update_cert')
-        else:
-            self.statusbar.showMessage(' Certificate update warning.')
-            self.msg_upload_warning(self.localip_addr)
-
-    # def update_device_cert(self):
-    #     self.logging.info('update_device_cert()')
-    #     self.selected_devinfo()
-    #     mac_addr = self.curr_mac
-
-    #     if len(self.searchcode_input.text()) == 0:
-    #         self.code = " "
-    #     else:
-    #         self.code = self.searchcode_input.text()
-
-    #     # certificate channel type
-    #     cert = self.certificate_detail.toPlainText()
-    #     if self.cert_tcp_client.isChecked():
-    #         mode_cmd = 'TC'
-    #     elif self.cert_cloud.isChecked():
-    #         mode_cmd = 'WC'
-
-    #     # Certificate update
-    #     try:
-    #         if self.broadcast.isChecked():
-    #             self.t_certup = CertUploadThread(self.conf_sock, mac_addr, self.code, self.encoded_setting_pw, cert, None, None, self.curr_dev, mode_cmd)
-    #         elif self.unicast_ip.isChecked():
-    #             ip_addr = self.search_ipaddr.text()
-    #             port = int(self.search_port.text())
-    #             self.t_certup = CertUploadThread(self.conf_sock, mac_addr, self.code, self.encoded_setting_pw, cert, ip_addr, port, self.curr_dev, mode_cmd)
-    #         self.t_certup.uploading_size.connect(self.pgbar.setValue)
-    #         self.t_certup.upload_result.connect(self.update_result)
-    #         self.t_certup.error_flag.connect(self.update_error)
-    #         try:
-    #             self.t_certup.start()
-    #         except Exception as e:
-    #             self.logging.error(e)
-    #             self.update_result(-1)
-    #     except Exception as e:
-    #         self.logging.error(e)
-
-    # def get_certificate_from_server(self):
-    #     self.clear_certificate()
-    #     # ?: need host address verify or check if host has SSL certificate
-    #     try:
-    #         url = self.cert_server.text()
-    #         addr = urlsplit(url).hostname
-    #         port = 443
-    #     except Exception as e:
-    #         self.logging.error(e)
-
-    #     try:
-    #         # TODO: CHECK ssl_version
-    #         cert = ssl.get_server_certificate((addr, port))
-    #         self.certificate_detail.setText(cert)
-    #         # certificate size
-    #         self.cert_size.setText(str(len(cert)))
-    #         self.statusbar.showMessage("")
-
-    #         # TODO: 다운받은 certificate를 디바이스로 전송
-    #         # self.msg_certificate_success(file_name)
-
-    #     except Exception as e:
-    #         self.certificate_detail.setText('Fail to get certificate from server.\nPlease check the address')
-    #         self.statusbar.showMessage(' Warning: fail to get certificate from server.')
-    #         self.logging.error(e)
-
-    def clear_certificate(self):
-        self.certificate_detail.setText("")
-        self.cert_size.setText("")
-
-    def dialog_save_certificate(self):
-        fname, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Save Certificate", "server.crt", "Certificate Files (*.crt);;All Files (*)")
-
-        if fname:
-            fileName = fname
-            print(fileName)
-            self.save_certificate(fileName)
-
-            self.saved_path = QtCore.QFileInfo(fileName).path()
-            self.logging.info(self.saved_path)
-
-    def save_certificate(self, file_name):
-        # file_name = '%s.CA' % self.cert_server.text()
-        with open(file_name, 'w', encoding='utf-8') as f:
-            text = self.certificate_detail.toPlainText()
-            f.write(text)
-
-    def dialog_load_certificate(self):
-        if self.saved_path is None:
-            fname, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Load Certificate", "", "Certificate Files (*.crt);;All Files (*)")
-        else:
-            fname, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Load Certificate",  self.saved_path, "Certificate Files (*.crt);;All Files (*)")
-
-        if fname:
-            fileName = fname
-            print(fileName)
-            self.load_certificate(fileName)
-
-    # read certificate from file
-    def load_certificate(self, file_name):
-        try:
-            with open(file_name, 'r', encoding='utf-8') as f:
-                cert = f.read()
-                self.logging.info(cert)
-                self.certificate_detail.setText(cert)
-                self.cert_size.setText(str(len(cert)))
-        except Exception as e:
-            self.logging.error(e)
-
-    # ? encode setting password
-    def encode_setting_pw(self, setpw, mode):
-        # self.logging.info(setpw, mode)
-        try:
-            if not setpw:
-                self.use_setting_pw = False
-                self.encoded_setting_pw = ''
-            else:
-                self.use_setting_pw = True
-                self.encoded_setting_pw = base64.b64encode(setpw.encode('utf-8'))
-                self.logging.info(self.encoded_setting_pw)
-
-            # TODO: mode 판별 기준 재정립
-            if mode == 'setting':
-                self.do_setting()
-            elif mode == 'reset':
-                self.do_reset()
-            elif mode == 'upload':
-                # do firmware update
-                self.firmware_update(self.fw_filename, self.fw_filesize)
-            elif mode == 'factory_setting':
-                self.msg_factory_setting()
-            elif mode == 'factory_firmware':
-                self.msg_factory_firmware()
-            # certificate update
-            elif mode == 'update_cert':
-                # self.update_device_cert()
-                pass
-        except Exception as e:
-            self.logging.error(e)
-
-    # from device?
-    def check_setting_pw(self):
-        pass
 
     def do_setting(self):
         self.disable_object()
@@ -1881,16 +1386,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 for i in range(len(setcmd)):
                     if self.wiz752cmdObj.isvalidparameter(setcmd_cmd[i], setcmd.get(setcmd_cmd[i])) is False:
                         self.logging.info('Invalid parameter: %s %s' %
-                                          (setcmd_cmd[i], setcmd.get(setcmd_cmd[i])))
-                        self.msg_invalid(setcmd.get(setcmd_cmd[i]))
-                        invalid_flag += 1
-            elif 'WIZ2000' in self.curr_dev:
-                self.logging.info('WIZ2000 device setting...')
-                invalid_flag = 0
-                setcmd_cmd = list(setcmd.keys())
-                for i in range(len(setcmd)):
-                    if self.wiz2000cmdObj.isvalidparameter(setcmd_cmd[i], setcmd.get(setcmd_cmd[i])) is False:
-                        self.logging.info('WIZ2000: Invalid parameter: %s %s' %
                                           (setcmd_cmd[i], setcmd.get(setcmd_cmd[i])))
                         self.msg_invalid(setcmd.get(setcmd_cmd[i]))
                         invalid_flag += 1
@@ -2053,7 +1548,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         else:
             self.code = self.searchcode_input.text()
 
-        # WIZ2000 not use 'AB' command
         # FW update
         if self.broadcast.isChecked():
             self.t_fwup = FWUploadThread(self.conf_sock, mac_addr, self.code,
@@ -2099,10 +1593,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 self.logging.info(self.fw_filesize)
 
             # upload start
-            if 'WIZ2000' in self.curr_dev:
-                self.input_setting_pw('upload')
-            else:
-                self.firmware_update(self.fw_filename, self.fw_filesize)
+            self.firmware_update(self.fw_filename, self.fw_filesize)
 
     def net_check_ping(self, dst_ip):
         self.statusbar.showMessage(' Checking the network...')
@@ -2201,7 +1692,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 self.code = " "
             else:
                 self.code = self.searchcode_input.text()
-            # WIZ2000: factory reset option
+
+            # Factory reset option
             if mode == 'setting':
                 cmd_list = self.wizmakecmd.factory_reset(
                     mac_addr, self.code, self.encoded_setting_pw, self.curr_dev, "")
@@ -2221,28 +1713,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                     self.conf_sock, cmd_list, 'udp', OP_SETCOMMAND, 2)
             self.wizmsghandler.set_result.connect(self.factory_result)
             self.wizmsghandler.start()
-
-    # TODO: setting pw check
-    def input_setting_pw(self, mode):
-        text, okbtn = QtWidgets.QInputDialog.getText(
-            self, "Setting password", "Input setting password", QtWidgets.QLineEdit.Password, "")
-        if okbtn:
-            self.logging.info('{}, {}'.format(text, len(text)))
-            if self.enable_setting_pw.isChecked():
-                if not text:
-                    # password 필요
-                    self.logging.info('========== need password')
-                else:
-                    self.encode_setting_pw(text, mode)
-            else:
-                self.encode_setting_pw(text, mode)
-
-    # def input_certificate_server(self):
-    #     text, okbtn = QtWidgets.QInputDialog.getText(self, "Update certificate", "Input the host address", QtWidgets.QLineEdit.Normal, "")
-    #     if okbtn:
-    #         print('input_certificate_server()', text, len(text))
-    #         # TODO: certificate update function
-    #         self.get_certificate_from_server(text)
 
     # To set the wait time when no response from the device when searching
     def input_search_wait_time(self):
@@ -2553,9 +2023,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.gpiob_label.setFont(self.smallfont)
         self.gpioc_label.setFont(self.smallfont)
         self.gpiod_label.setFont(self.smallfont)
-
-        self.certificate_detail.setFont(self.certfont)
-
 
 class ThreadProgress(QtCore.QThread):
     change_value = QtCore.pyqtSignal(int)

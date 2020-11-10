@@ -60,7 +60,6 @@ class FWUploadThread(QThread):
         self.error_noresponse = 0
         self.retrycheck = 0
 
-        # if wiz2000
         self.dev_name = dev_name
         self.set_pw = set_pw
 
@@ -112,8 +111,6 @@ class FWUploadThread(QThread):
         # Send FW UPload request message
         cmd_list.append(["MA", self.dest_mac])
         cmd_list.append(["PW", self.idcode])
-        if 'WIZ2000' in self.dev_name:
-            cmd_list.append(["AP", self.set_pw.decode()])
         cmd_list.append([command, str(self.filesize)])
 
         print('sendCmd() cmd_list ===> ', cmd_list)
@@ -138,13 +135,8 @@ class FWUploadThread(QThread):
 
     def run(self):
         self.setparam()
-        # wiz2000: not use 'AB' command
         print('===============>> FW upload', self.dev_name)
-        if 'WIZ2000' in self.dev_name:
-            print('wiz2000 FW upload', self.dev_name)
-            pass
-        else:
-            self.jumpToApp()
+        self.jumpToApp()
 
         if 'UDP' in self.sock_type:
             pass
