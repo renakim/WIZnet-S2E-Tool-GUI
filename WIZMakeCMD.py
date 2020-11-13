@@ -39,10 +39,6 @@ ONE_PORT_DEV = [
     "WIZ108SR",
 ]
 TWO_PORT_DEV = ["WIZ752SR-12x", "WIZ752SR-120", "WIZ752SR-125"]
-# DEVICE_SERVER = []
-
-# BAUDRATES = [300, 600, 1200, 1800, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 230400, 460800]
-# not use 'UI' and 'EI' on Configuration tool (UART interface(Code))
 
 # for pre-search
 cmd_presearch = ["MC", "VR", "MN", "ST", "IM", "OP", "LI", "SM", "GW"]
@@ -53,10 +49,6 @@ cmd_added = ['SC', 'TR']  # for WIZ750SR F/W version 1.2.0 or later
 cmd_ch2 = ['QS','QO','QH','QP','QL','RV','RA','RE','RR','EN','RS','EB','ED','EP','ES','EF','E0','E1','NT','NS','ND']
 
 cmd_gpio = ["CA", "CB", "CC", "CD", "GA", "GB", "GC", "GD"] # for expansion GPIO
-
-# command for WIZ2000
-cmd_wiz2000 = ['MB', 'SE', 'CE', 'N0', 'N1', 'N2', 'LF', 'AE', 'AP', 'CT', 'AL', 'GR', 'AM', 'CM', 'C0', 'C1', 'C2', 'C3', 'UP']
-# cmd_wiz2000 = ['MB', 'MM', 'SE', 'CE', 'N0', 'N1', 'N2', 'LF', 'QF', 'AE', 'AP', 'CT', 'AL', 'GR', 'AM'] # include channel 2 command
 
 ### CMD list
 cmd_1p_default = cmd_ch1
@@ -83,10 +75,7 @@ class WIZMakeCMD:
         cmd_header.append(["MA", mac_addr])
         cmd_header.append(["PW", idcode])
         # print('reset', mac_addr, idcode, set_pw, devname)
-        if devname:
-            if "WIZ2000" in devname:
-                cmd_header.append(["AP", set_pw.decode()])
-
+       
         return cmd_header
 
     def presearch(self, mac_addr, idcode):
@@ -112,10 +101,6 @@ class WIZMakeCMD:
                     cmd_list.append([cmd, ""])
         elif devname in TWO_PORT_DEV or "752" in devname:
             for cmd in cmd_2p_default:
-                cmd_list.append([cmd, ""])
-        elif "WIZ2000" in devname:
-            cmds = cmd_1p_advanced + cmd_wiz2000
-            for cmd in cmds:
                 cmd_list.append([cmd, ""])
         else:
             pass
@@ -151,10 +136,6 @@ class WIZMakeCMD:
                 #     cmd_list.append([cmd, ""])
                 # for WIZ752SR-12x
                 for cmd in cmd_ch2:
-                    cmd_list.append([cmd, ""])
-            elif "WIZ2000" in devname:
-                cmds = cmd_1p_advanced + cmd_wiz2000
-                for cmd in cmds:
                     cmd_list.append([cmd, ""])
             cmd_list.append(["SV", ""])  # save device setting
             cmd_list.append(["RT", ""])  # Device reboot
