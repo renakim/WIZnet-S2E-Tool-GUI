@@ -64,6 +64,8 @@ class WIZMSGHandler(QThread):
         self.rcv_list = []
         # self.st_list = []
 
+        self.data = b""
+
         self.what_sock = what_sock
         self.cmd_list = cmd_list
         self.opcode = op_code
@@ -162,12 +164,11 @@ class WIZMSGHandler(QThread):
         if self.timeout < 2:
             for sock in readready:
                 if sock == self.sock.sock:
-                    data = self.sock.recvfrom()
-                    print("data 1", data)
+                    self.data = self.sock.recvfrom()
+                    print("data 1", self.data)
 
-                    self.searched_data.emit(data)
-                    # replylists = data.splitlines()
-                    replylists = data.split(b"\r\n")
+                    self.searched_data.emit(self.data)
+                    replylists = self.data.split(b"\r\n")
                     print("replylists 1", replylists)
                     self.getreply = replylists
         else:
@@ -177,16 +178,15 @@ class WIZMSGHandler(QThread):
 
                 for sock in readready:
                     if sock == self.sock.sock:
-                        data = self.sock.recvfrom()
-                        print("data 2", data)
+                        self.data = self.sock.recvfrom()
+                        print("data 2", self.data)
 
                         #! check if data reduplication
-                        if data in self.rcv_list:
+                        if self.data in self.rcv_list:
                             replylists = []
                         else:
-                            self.rcv_list.append(data)  # received data backup
-                            # replylists = data.splitlines()
-                            replylists = data.split(b"\r\n")
+                            self.rcv_list.append(self.data)  # received data backup
+                            replylists = self.data.split(b"\r\n")
 
                             print("replylists 2", replylists)
                             self.getreply = replylists
@@ -244,7 +244,7 @@ class WIZMSGHandler(QThread):
                 self.search_result.emit(len(self.mac_list))
 
                 self.msleep(100)
-                self.searched_data.emit(data)
+                self.searched_data.emit(self.data)
 
                 # return len(self.mac_list)
             if self.opcode == OP_SETCOMMAND:

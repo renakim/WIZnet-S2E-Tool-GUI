@@ -39,7 +39,7 @@ SOCK_OPEN_STATE = 3
 SOCK_CONNECTTRY_STATE = 4
 SOCK_CONNECT_STATE = 5
 
-VERSION = 'V1.0.0 beta'
+VERSION = 'V0.9.0 beta'
 
 
 def resource_path(relative_path):
@@ -299,9 +299,9 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
     def socket_config(self):
         # Broadcast
         if self.selected_eth is None:
-            self.conf_sock = WIZUDPSock(5000, 50001, "")
+            self.conf_sock = WIZUDPSock(5000, 52000, "")
         else:
-            self.conf_sock = WIZUDPSock(5000, 50001, self.selected_eth)
+            self.conf_sock = WIZUDPSock(5000, 52000, self.selected_eth)
             self.logging.info(self.selected_eth)
 
         self.conf_sock.open()
@@ -405,7 +405,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         profile = {}
 
         try:
-            if dev_data is not None:
+            if dev_data != b"":
                 self.eachdev_info.append(dev_data)
                 # print('eachdev_info', len(self.eachdev_info), self.eachdev_info)
                 for i in range(len(self.eachdev_info)):

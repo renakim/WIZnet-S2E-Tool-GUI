@@ -2,21 +2,8 @@
 
 ## Make Serial command
 
-import socket
-import time
-import struct
-import binascii
 import sys
-import getopt
-import logging
 import re
-import os
-from WIZ750CMDSET import WIZ750CMDSET
-from WIZ752CMDSET import WIZ752CMDSET
-from WIZUDPSock import WIZUDPSock
-from WIZMSGHandler import WIZMSGHandler
-from WIZArgParser import WIZArgParser
-from FWUploadThread import FWUploadThread
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -43,22 +30,22 @@ ONE_PORT_DEV = [
 TWO_PORT_DEV = ["WIZ752SR-12x", "WIZ752SR-120", "WIZ752SR-125"]
 
 # ASG2X0 config
+# cmd_asg = ["MC", "VR", "MN", "IM", "OP", "LI", "SM", "GW", "DS", "WF", "WS", "WP"]
 cmd_asg = ["MC", "VR", "MN", "IM", "OP", "LI", "SM", "GW", "DS"]
 
 # for pre-search
 cmd_presearch = ["MC", "VR", "MN", "ST", "IM", "OP", "LI", "SM", "GW"]
 
 # Command for each device
-cmd_ch1 = ['MC','VR','MN','UN','ST','IM','OP','DD','CP','PO','DG','KA','KI','KE','RI','LI','SM','GW','DS','PI','PP','DX','DP','DI','DW','DH','LP','RP','RH','BR','DB','PR','SB','FL','IT','PT','PS','PD','TE','SS','NP','SP']
+cmd_ch1 = ["MC", "VR", "MN", "UN", "ST", "IM", "OP", "DD", "CP", "PO", "DG", "KA", "KI", "KE", "RI", "LI", "SM", "GW", "DS", "PI", "PP", "DX", "DP", "DI", "DW", "DH", "LP", "RP", "RH", "BR", "DB", "PR", "SB", "FL", "IT", "PT", "PS", "PD", "TE", "SS", "NP", "SP"]
 cmd_added = ['SC', 'TR']  # for WIZ750SR F/W version 1.2.0 or later
-cmd_ch2 = ['QS','QO','QH','QP','QL','RV','RA','RE','RR','EN','RS','EB','ED','EP','ES','EF','E0','E1','NT','NS','ND']
+cmd_ch2 = ["QS", "QO", "QH", "QP", "QL", "RV", "RA", "RE", "RR", "EN", "RS", "EB", "ED", "EP", "ES", "EF", "E0", "E1", "NT", "NS", "ND"]
 
-cmd_gpio = ["CA", "CB", "CC", "CD", "GA", "GB", "GC", "GD"] # for expansion GPIO
-
-### CMD list
+# CMD list
 cmd_1p_default = cmd_ch1
 cmd_1p_advanced = cmd_ch1 + cmd_added
 cmd_2p_default = cmd_ch1 + cmd_ch2
+
 
 def version_compare(version1, version2):
     def normalize(v):
@@ -80,7 +67,7 @@ class WIZMakeCMD:
         cmd_header.append(["MA", mac_addr])
         cmd_header.append(["PW", idcode])
         # print('reset', mac_addr, idcode, set_pw, devname)
-       
+
         return cmd_header
 
     def presearch(self, mac_addr, idcode):
@@ -110,13 +97,6 @@ class WIZMakeCMD:
         else:
             pass
 
-        return cmd_list
-
-    def get_gpiovalue(self, mac_addr, idcode):
-        cmd_list = self.make_header(mac_addr, idcode)
-        
-        for cmd in cmd_gpio:
-            cmd_list.append([cmd, ""])
         return cmd_list
 
     # Set device
@@ -159,4 +139,3 @@ class WIZMakeCMD:
         cmd_list = self.make_header(mac_addr, idcode, devname=devname, set_pw=set_pw)
         cmd_list.append(["FR", param])
         return cmd_list
-
