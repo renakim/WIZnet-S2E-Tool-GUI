@@ -588,6 +588,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             if 'DS' in dev_data:
                 self.dns_addr.setText(dev_data['DS'])
 
+            # WiFi Configuration
+
             self.object_config()
         except Exception as e:
             self.logging.error(e)
@@ -840,14 +842,22 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
     def about_info(self):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setTextFormat(QtCore.Qt.RichText)
-        text = "<div style=text-align:center><font size=5 color=darkblue>About WIZnet-S2E-Tool-GUI</font>" \
-            + "<br><a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI'><font color=darkblue size=4>* Github repository</font></a>" \
-            + "<br><br><font size=4 color=black>Version " + VERSION \
-            + "<br><br><font size=5 color=black>WIZnet website</font><br>" \
-            + "<a href='http://www.wiznet.io/'><font color=black>WIZnet Official homepage</font></a>"  \
-            + "<br><a href='https://forum.wiznet.io/'><font color=black>WIZnet Forum</font></a>" \
-            + "<br><a href='https://wizwiki.net/'><font color=black>WIZnet Wiki</font></a>" \
-            + "<br><br>2018 WIZnet Co.</font><br></div>"
+        text = "<div style=text-align:center>   \
+                    <font size=5 color=darkblue>About WIZnet Configuration Tool</font><br>  \
+                    <a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI'><br><font color=darkblue size=4>* Github repository</font></a>    \
+                    <a href='http://www.wiznet.io/'><font color=black>WIZnet Official homepage</font></a> \
+                    <br><a href='https://forum.wiznet.io/'><font color=black>WIZnet Forum</font></a>  \
+                    <br><a href='https://wizwiki.net/'><font color=black>WIZnet Wiki</font></a>   \
+                    <br><br>2020 WIZnet Co.</font><br>    \
+                </div>"
+        # text = "<div style=text-align:center><font size=5 color=darkblue>About WIZnet-S2E-Tool-GUI</font>" \
+        #     + "<br><a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI'><font color=darkblue size=4>* Github repository</font></a>" \
+        #     + "<br><br><font size=4 color=black>Version " + VERSION \
+        #     + "<br><br><font size=5 color=black>WIZnet website</font><br>" \
+        #     + "<a href='http://www.wiznet.io/'><font color=black>WIZnet Official homepage</font></a>"  \
+        #     + "<br><a href='https://forum.wiznet.io/'><font color=black>WIZnet Forum</font></a>" \
+        #     + "<br><a href='https://wizwiki.net/'><font color=black>WIZnet Wiki</font></a>" \
+        #     + "<br><br>2018 WIZnet Co.</font><br></div>"
         msgbox.about(self, "About WIZnet-S2E-Tool-GUI", text)
 
     def msg_not_support(self):
