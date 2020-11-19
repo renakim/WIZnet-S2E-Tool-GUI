@@ -718,10 +718,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.logging.info('Setting: no response from device.')
             self.statusbar.showMessage(' Setting: no response from device.')
             self.msg_set_error()
-        elif resp_len == -3:
-            self.logging.info('Setting: wrong password')
-            self.statusbar.showMessage(' Setting: wrong password.')
-            self.msg_setting_pw_error()
         elif resp_len < 50:
             self.logging.info('Warning: setting is did not well.')
             self.statusbar.showMessage(' Warning: setting is did not well.')
