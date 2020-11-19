@@ -1,22 +1,16 @@
 #!/usr/bin/python
 
 import socket
-import time
-import struct
-import binascii
-import select
-import sys
-import threading
-from random import randint
 
 # for command set/get
+
 
 class WIZUDPSock:
     # def __init__(self, port, peerport):
     def __init__(self, port, peerport, ipaddr=None):
         self.sock = None
         # self.localport = randint(52000, 53000)
-        self.localport = 52000
+        self.localport = 53000
         self.peerport = peerport
         self.ipaddr = ipaddr
 

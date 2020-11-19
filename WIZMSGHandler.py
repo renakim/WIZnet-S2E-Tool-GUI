@@ -9,7 +9,6 @@ import select
 import sys
 import codecs
 from WIZ750CMDSET import WIZ750CMDSET
-from WIZ752CMDSET import WIZ752CMDSET
 from wizsocket.TCPClient import TCPClient
 from PyQt5.QtCore import QTimer, QThread, pyqtSignal
 
@@ -69,7 +68,7 @@ class WIZMSGHandler(QThread):
         self.vr_list = []
         self.getreply = []
         self.rcv_list = []
-        self.st_list = []
+        # self.st_list = []
 
         self.what_sock = what_sock
         self.cmd_list = cmd_list
@@ -93,7 +92,7 @@ class WIZMSGHandler(QThread):
                 except Exception as e:
                     print('[ERROR] makecommands() encode:', cmd[0], e)
                 self.size += len(cmd[0])
-                if cmd[0] is "MA":
+                if cmd[0] == "MA":
                     # sys.stdout.write('cmd[1]: %r\r\n' % cmd[1])
                     cmd[1] = cmd[1].replace(":", "")
                     # print(cmd[1])
@@ -125,6 +124,7 @@ class WIZMSGHandler(QThread):
             print('[ERROR] WIZMSGHandler makecommands(): %r' % e)
 
     def sendcommands(self):
+        print(self.msg)
         self.sock.sendto(self.msg)
 
     def sendcommandsTCP(self):
@@ -163,7 +163,7 @@ class WIZMSGHandler(QThread):
         self.mac_list = []
         self.mn_list = []
         self.vr_list = []
-        self.st_list = []
+        # self.st_list = []
         self.rcv_list = []
         # print('readready value: ', len(readready), readready)
 
@@ -172,10 +172,12 @@ class WIZMSGHandler(QThread):
             for sock in readready:
                 if sock == self.sock.sock:
                     data = self.sock.recvfrom()
+                    print('data 1', data)
+
                     self.searched_data.emit(data)
                     # replylists = data.splitlines()
                     replylists = data.split(b"\r\n")
-                    # print('replylists', replylists)
+                    print('replylists 1', replylists)
                     self.getreply = replylists
         else:
             while True:
@@ -185,6 +187,7 @@ class WIZMSGHandler(QThread):
                 for sock in readready:
                     if sock == self.sock.sock:
                         data = self.sock.recvfrom()
+                        print('data 2', data)
 
                         #! check if data reduplication
                         if data in self.rcv_list:
@@ -194,10 +197,10 @@ class WIZMSGHandler(QThread):
                             # replylists = data.splitlines()
                             replylists = data.split(b"\r\n")
                             
-                            print('replylists', replylists)
+                            print('replylists 2', replylists)
                             self.getreply = replylists
 
-                        if self.opcode is OP_SEARCHALL:
+                        if self.opcode == OP_SEARCHALL:
                             try:
                                 for i in range(0, len(replylists)):
                                     if b'MC' in replylists[i]:
@@ -212,12 +215,12 @@ class WIZMSGHandler(QThread):
                                     if b'OP' in replylists[i]:
                                         if self.check_parameter(replylists[i]):
                                             self.mode_list.append(replylists[i][2:])
-                                    if b'ST' in replylists[i]:
-                                        if self.check_parameter(replylists[i]):
-                                            self.st_list.append(replylists[i][2:])
+                                    # if b'ST' in replylists[i]:
+                                    #     if self.check_parameter(replylists[i]):
+                                    #         self.st_list.append(replylists[i][2:])
                             except Exception as e:
                                 print('[ERROR] WIZMSGHandler makecommands(): %r' % e)
-                        elif self.opcode is OP_FWUP:
+                        elif self.opcode == OP_FWUP:
                             for i in range(0, len(replylists)):
                                 if b'MA' in replylists[i][:2]:
                                     dest_mac = self.dest_mac
@@ -230,7 +233,7 @@ class WIZMSGHandler(QThread):
                                     # sys.stdout.write('self.isvalid is True\r\n')
                                     param = replylists[i][2:].split(b':')
                                     self.reply = replylists[i][2:]
-                        elif self.opcode is OP_SETCOMMAND:
+                        elif self.opcode == OP_SETCOMMAND:
                             for i in range(0, len(replylists)):
                                 if b'AP' in replylists[i][:2]:
                                     if replylists[i][2:] == b' ':
@@ -244,12 +247,18 @@ class WIZMSGHandler(QThread):
                 if not readready or not replylists:
                     break
 
-            if self.opcode is OP_SEARCHALL:
+            if self.opcode == OP_SEARCHALL:
                 self.msleep(500)
                 # print('Search device:', self.mac_list)
+
                 self.search_result.emit(len(self.mac_list))
+                
+                # !
+                self.msleep(100)
+                self.searched_data.emit(data)
+
                 # return len(self.mac_list)
-            if self.opcode is OP_SETCOMMAND:
+            if self.opcode == OP_SETCOMMAND:
                 self.msleep(500)
                 # print(self.rcv_list)
                 if len(self.rcv_list) > 0:
@@ -260,7 +269,7 @@ class WIZMSGHandler(QThread):
                         self.set_result.emit(len(self.rcv_list[0]))
                 else:
                     self.set_result.emit(-1)
-            elif self.opcode is OP_FWUP:
+            elif self.opcode == OP_FWUP:
                 return self.reply
             # sys.stdout.write("%s\r\n" % self.mac_list)
 
@@ -296,7 +305,7 @@ class DataRefresh(QThread):
         for cmd in self.cmd_list:
             self.msg[self.size:] = str.encode(cmd[0])
             self.size += len(cmd[0])
-            if cmd[0] is "MA":
+            if cmd[0] == "MA":
                 cmd[1] = cmd[1].replace(":", "")
                 hex_string = codecs.decode(cmd[1], 'hex')
 

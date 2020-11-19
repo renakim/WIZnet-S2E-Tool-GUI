@@ -1,19 +1,14 @@
 #!/usr/bin/python
 
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QThread, pyqtSignal
 from wizsocket.TCPClient import TCPClient
 from WIZUDPSock import WIZUDPSock
 from WIZMSGHandler import WIZMSGHandler
 import binascii
-import re
 import sys
-import io
 import time
 import logging
 import threading
-import getopt
-import os
-import subprocess
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -127,7 +122,7 @@ class FWUploadThread(QThread):
         for i in range(4):
             # self.resp = self.wizmsghangler.parseresponse()
             self.resp = self.wizmsghangler.run()
-            if self.resp is not '':
+            if self.resp != '':
                 break
 
         self.msleep(500)
@@ -146,7 +141,7 @@ class FWUploadThread(QThread):
 
         self.sendCmd('FW')
 
-        if self.resp is not '' and self.resp is not None:
+        if self.resp != '' and self.resp is not None:
             resp = self.resp.decode('utf-8')
             # print('resp', resp)
             params = resp.split(':')
@@ -162,8 +157,8 @@ class FWUploadThread(QThread):
             self.error_noresponse = -1
         try:
             self.client = TCPClient(2, params[0], int(params[1]))
-        except:
-            pass
+        except Exception as e:
+            print(e)
         try:
             if self.error_noresponse < 0:
                 pass
@@ -205,10 +200,10 @@ class FWUploadThread(QThread):
 
                     elif self.client.state is SOCK_CONNECT_STATE:
                         # if self.client.working_state == idle_state:
-                            # sys.stdout.write('3 : %r' % self.client.getsockstate())
+                        # sys.stdout.write('3 : %r' % self.client.getsockstate())
                         try:
                             self.uploading_size.emit(5)
-                            while self.remainbytes is not 0:
+                            while self.remainbytes != 0:
                                 if self.client.working_state == idle_state:
                                     if self.remainbytes >= FW_PACKET_SIZE:
                                         msg = bytearray(FW_PACKET_SIZE)
@@ -255,7 +250,7 @@ class FWUploadThread(QThread):
                                             self.upload_result.emit(-1)
                                             self.terminate()
 
-                                    if self.istimeout is 1:
+                                    if self.istimeout == 1:
                                         self.istimeout = 0
                                         self.client.working_state = idle_state
                                         self.client.close()
@@ -294,7 +289,7 @@ class FWUploadThread(QThread):
     def sock_close(self):
         # 기존 연결 fin
         if self.tcp_sock is not None:
-            if self.tcp_sock.state is not SOCK_CLOSE_STATE:
+            if self.tcp_sock.state != SOCK_CLOSE_STATE:
                 self.tcp_sock.shutdown()
         if self.conf_sock is not None:
             self.conf_sock.shutdown()

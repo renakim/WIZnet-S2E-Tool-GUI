@@ -31,14 +31,19 @@ OP_FWUP = 6
 
 # Supported devices
 ONE_PORT_DEV = [
-    "WIZ750SR",
-    "WIZ750SR-100",
-    "WIZ750SR-105",
-    "WIZ750SR-110",
-    "WIZ107SR",
-    "WIZ108SR",
+    # "WIZ750SR",
+    # "WIZ750SR-100",
+    # "WIZ750SR-105",
+    # "WIZ750SR-110",
+    # "WIZ107SR",
+    # "WIZ108SR",
+    "ASG200",
+    "ASG210"
 ]
 TWO_PORT_DEV = ["WIZ752SR-12x", "WIZ752SR-120", "WIZ752SR-125"]
+
+# ASG2X0 config
+cmd_asg = ["MC", "VR", "MN", "IM", "OP", "LI", "SM", "GW", "DS"]
 
 # for pre-search
 cmd_presearch = ["MC", "VR", "MN", "ST", "IM", "OP", "LI", "SM", "GW"]
@@ -82,7 +87,7 @@ class WIZMakeCMD:
         cmd_list = self.make_header(mac_addr, idcode)
         # Search All Devices on the network
         # 장치 검색 시 필요 정보 Get
-        for cmd in cmd_presearch:
+        for cmd in cmd_asg:
             cmd_list.append([cmd, ""])
         return cmd_list
 
