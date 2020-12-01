@@ -14,13 +14,12 @@ import ifaddr
 import logging
 import logging.handlers
 
-testlog = logging.getLogger('testlogging')
+testlog = logging.getLogger("testlogging")
 testlog.setLevel(logging.INFO)
 
-fileformatter = logging.Formatter(
-    '[%(levelname)s][%(asctime)s]-(%(funcName)s)(%(lineno)s) %(message)s')
+fileformatter = logging.Formatter("[%(levelname)s][%(asctime)s]-(%(funcName)s)(%(lineno)s) %(message)s")
 
-fileHandler = logging.FileHandler('./toollogging.log', encoding='utf-8')
+fileHandler = logging.FileHandler("./toollogging.log", encoding="utf-8")
 streamHandler = logging.StreamHandler()
 
 fileHandler.setFormatter(fileformatter)
@@ -39,18 +38,17 @@ SOCK_OPEN_STATE = 3
 SOCK_CONNECTTRY_STATE = 4
 SOCK_CONNECT_STATE = 5
 
-VERSION = 'V0.9.0 beta'
+VERSION = "V0.9.0 beta"
 
 
 def resource_path(relative_path):
     # Get absolute path to resource, works for dev and for PyInstaller
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(
-        os.path.abspath(__file__)))
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
 
 # Load ui files
-main_window = uic.loadUiType(resource_path('gui/wizconfig_gui.ui'))[0]
+main_window = uic.loadUiType(resource_path("gui/wizconfig_gui.ui"))[0]
 
 
 class WIZWindow(QtWidgets.QMainWindow, main_window):
@@ -58,8 +56,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         super().__init__()
         self.setupUi(self)
 
-        self.setWindowTitle(
-            'WIZnet ASG2X0 Series Configuration Tool ' + VERSION)
+        self.setWindowTitle("WIZnet ASG2X0 Series Configuration Tool " + VERSION)
 
         self.logging = testlog
 
@@ -74,7 +71,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.gui_init()
 
         # Main icon
-        self.setWindowIcon(QtGui.QIcon(resource_path('gui/icon.ico')))
+        self.setWindowIcon(QtGui.QIcon(resource_path("gui/icon.ico")))
         self.set_btn_icon()
 
         self.wiz750cmdObj = WIZ750CMDSET(1)
@@ -86,7 +83,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.retry_search_num = 1
         self.search_wait_time = 3
 
-        self.encoded_setting_pw = ''
+        self.encoded_setting_pw = ""
 
         self.mac_list = []
         self.dev_name = []
@@ -151,11 +148,9 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
         # Menu event - Option
         self.net_adapter_info()
-        self.netconfig_menu.triggered[QtWidgets.QAction].connect(
-            self.net_ifs_selected)
+        self.netconfig_menu.triggered[QtWidgets.QAction].connect(self.net_ifs_selected)
         # Menu event - Option - Search option
-        self.action_set_wait_time.triggered.connect(
-            self.input_search_wait_time)
+        self.action_set_wait_time.triggered.connect(self.input_search_wait_time)
         self.action_retry_search.triggered.connect(self.input_retry_search)
 
         # network interface selection
@@ -166,10 +161,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
     def init_btn_factory(self):
         # factory_option = ['Factory default settings', 'Factory default firmware']
-        self.factory_setting_action = QtWidgets.QAction(
-            'Factory default settings', self)
-        self.factory_firmware_action = QtWidgets.QAction(
-            'Factory default firmware', self)
+        self.factory_setting_action = QtWidgets.QAction("Factory default settings", self)
+        self.factory_firmware_action = QtWidgets.QAction("Factory default firmware", self)
 
         self.btn_factory.addAction(self.factory_setting_action)
         self.btn_factory.addAction(self.factory_firmware_action)
@@ -178,15 +171,13 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         pass
 
     def net_ifs_selected(self, netifs):
-        ifs = netifs.text().split(':')
+        ifs = netifs.text().split(":")
         selected_ip = ifs[0]
         selected_name = ifs[1]
 
-        self.logging.info('net_ifs_selected() %s: %s' %
-                          (selected_ip, selected_name))
+        self.logging.info("net_ifs_selected() %s: %s" % (selected_ip, selected_name))
 
-        self.statusbar.showMessage(' Selected: %s: %s' %
-                                   (selected_ip, selected_name))
+        self.statusbar.showMessage(" Selected: %s: %s" % (selected_ip, selected_name))
         self.selected_eth = selected_ip
 
     def value_changed(self, value):
@@ -201,17 +192,16 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
     def net_changed(self, ifs):
         self.logging.info(self.net_interface.currentText())
-        ifs = self.net_interface.currentText().split(':')
+        ifs = self.net_interface.currentText().split(":")
         selected_ip = ifs[0]
         selected_name = ifs[1]
 
-        self.statusbar.showMessage(
-            ' Selected eth: %s: %s' % (selected_ip, selected_name))
+        self.statusbar.showMessage(" Selected eth: %s: %s" % (selected_ip, selected_name))
         self.selected_eth = selected_ip
 
     # Get network adapter & IP list
     def net_adapter_info(self):
-        self.netconfig_menu = QtWidgets.QMenu('Network Interface Config', self)
+        self.netconfig_menu = QtWidgets.QMenu("Network Interface Config", self)
         self.netconfig_menu.setFont(self.midfont)
         self.menuOption.addMenu(self.netconfig_menu)
 
@@ -223,10 +213,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             for ip in adapter.ips:
                 if len(ip.ip) > 6:
                     ipv4_addr = ip.ip
-                    if ipv4_addr == '127.0.0.1':
+                    if ipv4_addr == "127.0.0.1":
                         pass
                     else:
-                        net_ifs = ipv4_addr + ':' + adapter.nice_name
+                        net_ifs = ipv4_addr + ":" + adapter.nice_name
 
                         # -- get network interface list
                         self.net_list.append(adapter.nice_name)
@@ -273,9 +263,9 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.logging.info(option.text())
         opt = option.text()
 
-        if 'settings' in opt:
+        if "settings" in opt:
             self.event_factory_setting()
-        elif 'firmware' in opt:
+        elif "firmware" in opt:
             self.event_factory_firmware()
 
     def event_ip_alloc(self):
@@ -330,13 +320,13 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # default search id code
             self.code = " "
             self.all_response = []
-            self.pgbar.setFormat('Searching..')
+            self.pgbar.setFormat("Searching..")
             self.pgbar.setRange(0, 100)
             self.th_search.start()
             self.processing()
 
             if self.search_retry_flag:
-                self.logging.info('keep searched list')
+                self.logging.info("keep searched list")
                 pass
             else:
                 # List table initial (clear)
@@ -358,14 +348,14 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # self.logging.info('search: conf_sock: %s' % self.conf_sock)
 
             # Search devices
-            self.statusbar.showMessage(' Searching devices...')
+            self.statusbar.showMessage(" Searching devices...")
 
-            cmd_list = self.wizmakecmd.presearch(
-                "FF:FF:FF:FF:FF:FF", self.code)
+            cmd_list = self.wizmakecmd.presearch("FF:FF:FF:FF:FF:FF", self.code)
             # self.logging.info(cmd_list)
 
             self.wizmsghandler = WIZMSGHandler(
-                self.conf_sock, cmd_list, 'udp', OP_SEARCHALL, self.search_pre_wait_time)
+                self.conf_sock, cmd_list, "udp", OP_SEARCHALL, self.search_pre_wait_time
+            )
 
             self.wizmsghandler.search_result.connect(self.get_search_result)
             self.wizmsghandler.searched_data.connect(self.getsearch_each_dev)
@@ -379,26 +369,24 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
     def search_each_dev(self, dev_info_list):
         cmd_list = []
         self.eachdev_info = []
-        self.pgbar.setFormat('Search for each device...')
+        self.pgbar.setFormat("Search for each device...")
 
         self.socket_config()
 
         # Search devices
-        self.statusbar.showMessage(' Get each device information...')
+        self.statusbar.showMessage(" Get each device information...")
 
         # dev_info => [mac_addr, name, version]
         for dev_info in dev_info_list:
             # self.logging.info(dev_info)
-            cmd_list = self.wizmakecmd.search(
-                dev_info[0], self.code, dev_info[1], dev_info[2])
+            cmd_list = self.wizmakecmd.search(dev_info[0], self.code, dev_info[1], dev_info[2])
             # print(cmd_list)
             th_name = "dev_%s" % dev_info[0]
-            th_name = WIZMSGHandler(self.conf_sock, cmd_list, 'udp',
-                                    OP_SEARCHALL, self.search_wait_time_each)
+            th_name = WIZMSGHandler(self.conf_sock, cmd_list, "udp", OP_SEARCHALL, self.search_wait_time_each)
             th_name.searched_data.connect(self.getsearch_each_dev)
             th_name.start()
             th_name.wait()
-            self.statusbar.showMessage(' Done.')
+            self.statusbar.showMessage(" Done.")
 
     def getsearch_each_dev(self, dev_data):
         # self.logging.info(dev_data)
@@ -414,7 +402,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
                     for i in range(len(cmdsets)):
                         # print('cmdsets', i, cmdsets[i], cmdsets[i][:2], cmdsets[i][2:])
-                        if cmdsets[i][:2] == b'MA':
+                        if cmdsets[i][:2] == b"MA":
                             pass
                         else:
                             cmd = cmdsets[i][:2].decode()
@@ -422,7 +410,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                             profile[cmd] = param
 
                     # self.logging.info(profile)
-                    self.dev_profile[profile['MC']] = profile
+                    self.dev_profile[profile["MC"]] = profile
                     profile = {}
 
                     self.all_response = self.eachdev_info
@@ -438,7 +426,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 pass
         except Exception as e:
             self.logging.error(e)
-            self.msg_error('[ERROR] getsearch_each_dev(): {}'.format(e))
+            self.msg_error("[ERROR] getsearch_each_dev(): {}".format(e))
 
         # print('self.dev_profile', self.dev_profile)
 
@@ -459,10 +447,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.btn_search.setEnabled(True)
 
             if devnum == 0:
-                self.logging.info('No device.')
+                self.logging.info("No device.")
             else:
                 if self.search_retry_flag:
-                    self.logging.info('search retry flag on')
+                    self.logging.info("search retry flag on")
                     new_mac_list = self.wizmsghandler.mac_list
                     new_mn_list = self.wizmsghandler.mn_list
                     new_vr_list = self.wizmsghandler.vr_list
@@ -492,10 +480,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 try:
                     for i in range(0, len(self.mac_list)):
                         # device = "%s | %s" % (self.mac_list[i].decode(), self.dev_name[i].decode())
-                        self.list_device.setItem(
-                            i, 0, QtWidgets.QTableWidgetItem(self.mac_list[i].decode()))
-                        self.list_device.setItem(
-                            i, 1, QtWidgets.QTableWidgetItem(self.dev_name[i].decode()))
+                        self.list_device.setItem(i, 0, QtWidgets.QTableWidgetItem(self.mac_list[i].decode()))
+                        self.list_device.setItem(i, 1, QtWidgets.QTableWidgetItem(self.dev_name[i].decode()))
                 except Exception as e:
                     self.logging.error(e)
 
@@ -507,10 +493,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 self.list_device.horizontalHeader().setSectionResizeMode(2)
                 self.list_device.verticalHeader().setSectionResizeMode(2)
 
-            self.statusbar.showMessage(' Find %d devices' % devnum)
+            self.statusbar.showMessage(" Find %d devices" % devnum)
             self.get_dev_list()
         else:
-            self.logging.info('search error')
+            self.logging.info("search error")
 
     def get_dev_list(self):
         # basic_data = None
@@ -521,10 +507,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         if self.mac_list is not None:
             try:
                 for i in range(len(self.mac_list)):
-                    self.searched_dev.append([self.mac_list[i].decode(), self.dev_name[i].decode(
-                    ), self.vr_list[i].decode()])
-                    self.dev_data[self.mac_list[i].decode()] = [self.dev_name[i].decode(
-                    ), self.vr_list[i].decode()]
+                    self.searched_dev.append(
+                        [self.mac_list[i].decode(), self.dev_name[i].decode(), self.vr_list[i].decode()]
+                    )
+                    self.dev_data[self.mac_list[i].decode()] = [self.dev_name[i].decode(), self.vr_list[i].decode()]
             except Exception as e:
                 self.logging.error(e)
 
@@ -533,7 +519,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # ! not use each search
             # self.search_each_dev(self.searched_dev)
         else:
-            self.logging.info('There is no device.')
+            self.logging.info("There is no device.")
 
     def dev_clicked(self):
         for currentItem in self.list_device.selectedItems():
@@ -554,55 +540,57 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
             self.fill_devinfo(dev_data)
         else:
-            if (len(self.dev_profile) != self.searched_devnum):
-                self.logging.info('warning: 검색된 장치의 수와 프로파일된 장치의 수가 다릅니다.')
-            self.logging.info('warning: retry search')
+            if len(self.dev_profile) != self.searched_devnum:
+                self.logging.info("warning: 검색된 장치의 수와 프로파일된 장치의 수가 다릅니다.")
+            self.logging.info("warning: retry search")
 
     # TODO: decode exception handling
     def fill_devinfo(self, dev_data):
-        print('fill_devinfo', dev_data)
+        print("fill_devinfo", dev_data)
         try:
             # device info (RO)
-            if 'MN' in dev_data:
-                self.dev_type.setText(dev_data['MN'])
-            if 'VR' in dev_data:
-                self.fw_version.setText(dev_data['VR'])
+            if "MN" in dev_data:
+                self.dev_type.setText(dev_data["MN"])
+            if "VR" in dev_data:
+                self.fw_version.setText(dev_data["VR"])
             # device info - channel 1
             # if 'ST' in dev_data:
             #     self.ch1_status.setText(dev_data['ST'])
             # if 'UN' in dev_data:
             #     self.ch1_uart_name.setText(dev_data['UN'])
             # Network - general
-            if 'IM' in dev_data:
-                if dev_data['IM'] == '0':
+            if "IM" in dev_data:
+                if dev_data["IM"] == "0":
                     self.ip_static.setChecked(True)
-                elif dev_data['IM'] == '1':
+                elif dev_data["IM"] == "1":
                     self.ip_dhcp.setChecked(True)
-            if 'LI' in dev_data:
-                self.localip.setText(dev_data['LI'])
-                self.localip_addr = dev_data['LI']
-            if 'SM' in dev_data:
-                self.subnet.setText(dev_data['SM'])
-            if 'GW' in dev_data:
-                self.gateway.setText(dev_data['GW'])
-            if 'DS' in dev_data:
-                self.dns_addr.setText(dev_data['DS'])
+            if "LI" in dev_data:
+                self.localip.setText(dev_data["LI"])
+                self.localip_addr = dev_data["LI"]
+            if "SM" in dev_data:
+                self.subnet.setText(dev_data["SM"])
+            if "GW" in dev_data:
+                self.gateway.setText(dev_data["GW"])
+            if "DS" in dev_data:
+                self.dns_addr.setText(dev_data["DS"])
 
             # WiFi Configuration
 
             self.object_config()
         except Exception as e:
             self.logging.error(e)
-            self.msg_error('Get device information error {}'.format(e))
+            self.msg_error("Get device information error {}".format(e))
 
     def msg_error(self, error):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Critical)
         msgbox.setFont(self.midfont)
         msgbox.setWindowTitle("Unexcepted error")
-        text = "<div style=text-align:center>Unexcepted error occurred." \
-            + "<br>Please report the issue with detail message." \
+        text = (
+            "<div style=text-align:center>Unexcepted error occurred."
+            + "<br>Please report the issue with detail message."
             + "<br><a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI/issues'>Github Issue page</a></div>"
+        )
         msgbox.setText(text)
         # detail info
         msgbox.setDetailedText(str(error))
@@ -620,14 +608,14 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
         try:
             # Network - general
-            setcmd['LI'] = self.localip.text()
-            setcmd['SM'] = self.subnet.text()
-            setcmd['GW'] = self.gateway.text()
+            setcmd["LI"] = self.localip.text()
+            setcmd["SM"] = self.subnet.text()
+            setcmd["GW"] = self.gateway.text()
             if self.ip_static.isChecked() is True:
-                setcmd['IM'] = '0'
+                setcmd["IM"] = "0"
             elif self.ip_dhcp.isChecked() is True:
-                setcmd['IM'] = '1'
-            setcmd['DS'] = self.dns_addr.text()
+                setcmd["IM"] = "1"
+            setcmd["DS"] = self.dns_addr.text()
         except Exception as e:
             self.logging.error(e)
 
@@ -645,39 +633,44 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # self.logging.info('Device is not selected')
             self.msg_dev_not_selected()
         else:
-            self.statusbar.showMessage(' Setting device...')
+            self.statusbar.showMessage(" Setting device...")
             # matching set command
             setcmd = self.get_object_value()
             # self.selected_devinfo()
 
-            if self.curr_dev in ONE_PORT_DEV or 'WIZ750' in self.curr_dev:
-                self.logging.info('One port dev setting')
+            if self.curr_dev in ONE_PORT_DEV or "WIZ750" in self.curr_dev:
+                self.logging.info("One port dev setting")
                 # Parameter validity check
                 invalid_flag = 0
                 setcmd_cmd = list(setcmd.keys())
                 for i in range(len(setcmd)):
                     if self.wiz750cmdObj.isvalidparameter(setcmd_cmd[i], setcmd.get(setcmd_cmd[i])) is False:
-                        self.logging.info('Invalid parameter: %s %s' %
-                                          (setcmd_cmd[i], setcmd.get(setcmd_cmd[i])))
+                        self.logging.info("Invalid parameter: %s %s" % (setcmd_cmd[i], setcmd.get(setcmd_cmd[i])))
                         self.msg_invalid(setcmd.get(setcmd_cmd[i]))
                         invalid_flag += 1
             else:
                 invalid_flag = -1
-                self.logging.info('The device is not supported')
+                self.logging.info("The device is not supported")
 
             # self.logging.info('invalid flag: %d' % invalid_flag)
             if invalid_flag > 0:
                 pass
             elif invalid_flag == 0:
-                cmd_list = self.wizmakecmd.setcommand(self.curr_mac, self.code, self.encoded_setting_pw,
-                                                      list(setcmd.keys()), list(setcmd.values()), self.curr_dev, self.curr_ver)
+                cmd_list = self.wizmakecmd.setcommand(
+                    self.curr_mac,
+                    self.code,
+                    self.encoded_setting_pw,
+                    list(setcmd.keys()),
+                    list(setcmd.values()),
+                    self.curr_dev,
+                    self.curr_ver,
+                )
                 # self.logging.info(cmd_list)
 
                 # socket config
                 self.socket_config()
 
-                self.wizmsghandler = WIZMSGHandler(
-                    self.conf_sock, cmd_list, 'udp', OP_SETCOMMAND, 2)
+                self.wizmsghandler = WIZMSGHandler(self.conf_sock, cmd_list, "udp", OP_SETCOMMAND, 2)
                 self.wizmsghandler.set_result.connect(self.get_setting_result)
                 self.wizmsghandler.start()
 
@@ -685,7 +678,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         set_result = {}
 
         if resp_len > 100:
-            self.statusbar.showMessage(' Set device complete!')
+            self.statusbar.showMessage(" Set device complete!")
 
             # complete pop-up
             self.msg_set_success()
@@ -697,7 +690,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             cmdsets = self.set_reponse.split(b"\r\n")
 
             for i in range(len(cmdsets)):
-                if cmdsets[i][:2] == b'MA':
+                if cmdsets[i][:2] == b"MA":
                     pass
                 else:
                     try:
@@ -717,12 +710,12 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
             self.dev_clicked()
         elif resp_len == -1:
-            self.logging.info('Setting: no response from device.')
-            self.statusbar.showMessage(' Setting: no response from device.')
+            self.logging.info("Setting: no response from device.")
+            self.statusbar.showMessage(" Setting: no response from device.")
             self.msg_set_error()
         elif resp_len < 50:
-            self.logging.info('Warning: setting is did not well.')
-            self.statusbar.showMessage(' Warning: setting is did not well.')
+            self.logging.info("Warning: setting is did not well.")
+            self.statusbar.showMessage(" Warning: setting is did not well.")
             self.msg_set_warning()
 
         self.object_config()
@@ -737,34 +730,31 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             elif currentItem.column() == 1:
                 self.curr_dev = currentItem.text()
                 # print('current dev name:', self.curr_dev)
-            self.statusbar.showMessage(' Current device [%s : %s], %s' % (
-                self.curr_mac, self.curr_dev, self.curr_ver))
+            self.statusbar.showMessage(" Current device [%s : %s], %s" % (self.curr_mac, self.curr_dev, self.curr_ver))
 
     def reset_result(self, resp_len):
         if resp_len > 0:
-            self.statusbar.showMessage(' Reset complete.')
+            self.statusbar.showMessage(" Reset complete.")
             self.msg_reset_seccess()
 
         elif resp_len < 0:
-            self.statusbar.showMessage(
-                ' Reset/Factory failed: no response from device.')
+            self.statusbar.showMessage(" Reset/Factory failed: no response from device.")
 
         self.object_config()
 
     def factory_result(self, resp_len):
         if resp_len > 0:
-            self.statusbar.showMessage(' Factory reset complete.')
+            self.statusbar.showMessage(" Factory reset complete.")
             self.msg_factory_seccess()
 
         elif resp_len < 0:
-            self.statusbar.showMessage(
-                ' Reset/Factory failed: no response from device.')
+            self.statusbar.showMessage(" Reset/Factory failed: no response from device.")
 
         self.object_config()
 
     def do_reset(self):
         if len(self.list_device.selectedItems()) == 0:
-            self.logging.info('Device is not selected')
+            self.logging.info("Device is not selected")
             self.msg_dev_not_selected()
         else:
             self.sock_close()
@@ -772,53 +762,58 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.selected_devinfo()
             mac_addr = self.curr_mac
 
-            cmd_list = self.wizmakecmd.reset(
-                mac_addr, self.code, self.encoded_setting_pw, self.curr_dev)
-            self.logging.info('Reset: %s' % cmd_list)
+            cmd_list = self.wizmakecmd.reset(mac_addr, self.code, self.encoded_setting_pw, self.curr_dev)
+            self.logging.info("Reset: %s" % cmd_list)
 
             self.socket_config()
 
-            self.wizmsghandler = WIZMSGHandler(
-                self.conf_sock, cmd_list, 'udp', OP_SETCOMMAND, 2)
+            self.wizmsghandler = WIZMSGHandler(self.conf_sock, cmd_list, "udp", OP_SETCOMMAND, 2)
             self.wizmsghandler.set_result.connect(self.reset_result)
             self.wizmsghandler.start()
 
     def do_factory_reset(self, mode):
         if len(self.list_device.selectedItems()) == 0:
-            self.logging.info('Device is not selected')
+            self.logging.info("Device is not selected")
             self.msg_dev_not_selected()
         else:
             self.sock_close()
 
-            self.statusbar.showMessage(' Factory reset?')
+            self.statusbar.showMessage(" Factory reset?")
             self.selected_devinfo()
             mac_addr = self.curr_mac
 
             # Factory reset option
-            if mode == 'setting':
+            if mode == "setting":
                 cmd_list = self.wizmakecmd.factory_reset(
-                    mac_addr, self.code, self.encoded_setting_pw, self.curr_dev, "")
-            elif mode == 'firmware':
+                    mac_addr, self.code, self.encoded_setting_pw, self.curr_dev, ""
+                )
+            elif mode == "firmware":
                 cmd_list = self.wizmakecmd.factory_reset(
-                    mac_addr, self.code, self.encoded_setting_pw, self.curr_dev, "0")
+                    mac_addr, self.code, self.encoded_setting_pw, self.curr_dev, "0"
+                )
 
-            self.logging.info('Factory: %s' % cmd_list)
+            self.logging.info("Factory: %s" % cmd_list)
 
             self.socket_config()
 
             if self.unicast_ip.isChecked():
-                self.wizmsghandler = WIZMSGHandler(
-                    self.conf_sock, cmd_list, 'tcp', OP_SETCOMMAND, 2)
+                self.wizmsghandler = WIZMSGHandler(self.conf_sock, cmd_list, "tcp", OP_SETCOMMAND, 2)
             else:
-                self.wizmsghandler = WIZMSGHandler(
-                    self.conf_sock, cmd_list, 'udp', OP_SETCOMMAND, 2)
+                self.wizmsghandler = WIZMSGHandler(self.conf_sock, cmd_list, "udp", OP_SETCOMMAND, 2)
             self.wizmsghandler.set_result.connect(self.factory_result)
             self.wizmsghandler.start()
 
     # To set the wait time when no response from the device when searching
     def input_search_wait_time(self):
-        self.search_wait_time, okbtn = QtWidgets.QInputDialog.getInt(self, "Set the wating time for search",
-                                                                     "Input wating time for search:\n(Default: 3 seconds)", self.search_wait_time, 2, 10, 1)
+        self.search_wait_time, okbtn = QtWidgets.QInputDialog.getInt(
+            self,
+            "Set the wating time for search",
+            "Input wating time for search:\n(Default: 3 seconds)",
+            self.search_wait_time,
+            2,
+            10,
+            1,
+        )
         if okbtn:
             self.logging.info(self.search_wait_time)
             self.search_pre_wait_time = self.search_wait_time
@@ -827,10 +822,17 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
     def input_retry_search(self):
         inputdlg = QtWidgets.QInputDialog(self)
-        name = 'Do Search'
+        name = "Do Search"
         inputdlg.setOkButtonText(name)
-        self.retry_search_num, okbtn = inputdlg.getInt(self, "Retry search devices",
-                                                       "Search for additional devices,\nand the list of detected devices is maintained.\n\nInput for search retry number(option):", self.retry_search_num, 1, 10, 1)
+        self.retry_search_num, okbtn = inputdlg.getInt(
+            self,
+            "Retry search devices",
+            "Search for additional devices,\nand the list of detected devices is maintained.\n\nInput for search retry number(option):",
+            self.retry_search_num,
+            1,
+            10,
+            1,
+        )
 
         if okbtn:
             self.logging.info(self.retry_search_num)
@@ -850,14 +852,6 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                     <br><a href='https://wizwiki.net/'><font color=black>WIZnet Wiki</font></a>   \
                     <br><br>2020 WIZnet Co.</font><br>    \
                 </div>"
-        # text = "<div style=text-align:center><font size=5 color=darkblue>About WIZnet-S2E-Tool-GUI</font>" \
-        #     + "<br><a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI'><font color=darkblue size=4>* Github repository</font></a>" \
-        #     + "<br><br><font size=4 color=black>Version " + VERSION \
-        #     + "<br><br><font size=5 color=black>WIZnet website</font><br>" \
-        #     + "<a href='http://www.wiznet.io/'><font color=black>WIZnet Official homepage</font></a>"  \
-        #     + "<br><a href='https://forum.wiznet.io/'><font color=black>WIZnet Forum</font></a>" \
-        #     + "<br><a href='https://wizwiki.net/'><font color=black>WIZnet Wiki</font></a>" \
-        #     + "<br><br>2018 WIZnet Co.</font><br></div>"
         msgbox.about(self, "About WIZnet-S2E-Tool-GUI", text)
 
     def msg_not_support(self):
@@ -865,8 +859,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setWindowTitle("Not supported device")
         msgbox.setTextFormat(QtCore.Qt.RichText)
-        text = "The device is not supported.<br>Please contact us by the link below.<br><br>" \
+        text = (
+            "The device is not supported.<br>Please contact us by the link below.<br><br>"
             "<a href='https://github.com/Wiznet/WIZnet-S2E-Tool-GUI/issues'># Github issue page</a>"
+        )
         msgbox.setText(text)
         msgbox.exec_()
 
@@ -892,15 +888,15 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setWindowTitle("Invalid Response")
         msgbox.setText(
-            "Did not receive a valid response from the device.\nPlease check if the device is supported device or firmware is the latest version.")
+            "Did not receive a valid response from the device.\nPlease check if the device is supported device or firmware is the latest version."
+        )
         msgbox.exec_()
 
     def msg_set_warning(self):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setWindowTitle("Warning: Setting")
-        msgbox.setText(
-            "Setting did not well.\nPlease check the device or check the firmware version.")
+        msgbox.setText("Setting did not well.\nPlease check the device or check the firmware version.")
         msgbox.exec_()
 
     def msg_set_error(self):
@@ -919,35 +915,32 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
     def msg_set_success(self):
         msgbox = QtWidgets.QMessageBox(self)
-        msgbox.question(self, "Setting success", "Device configuration complete!",
-                        QtWidgets.QMessageBox.Yes)
+        msgbox.question(self, "Setting success", "Device configuration complete!", QtWidgets.QMessageBox.Yes)
 
     def msg_certificate_success(self, filename):
         msgbox = QtWidgets.QMessageBox(self)
         text = "Certificate downlaod complete!\n%s" % filename
-        msgbox.question(self, "Certificate download success",
-                        text, QtWidgets.QMessageBox.Yes)
+        msgbox.question(self, "Certificate download success", text, QtWidgets.QMessageBox.Yes)
 
     def msg_upload_warning(self, dst_ip):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setWindowTitle("Warning: upload/update")
         msgbox.setText(
-            "Destination IP is unreachable: %s\nPlease check if the device is in the same subnet with the PC." % dst_ip)
+            "Destination IP is unreachable: %s\nPlease check if the device is in the same subnet with the PC." % dst_ip
+        )
         msgbox.exec_()
 
     def msg_upload_failed(self):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Critical)
         msgbox.setWindowTitle("Error: Firmware upload")
-        msgbox.setText(
-            "Firmware update failed.\nPlease check the device's status.")
+        msgbox.setText("Firmware update failed.\nPlease check the device's status.")
         msgbox.exec_()
 
     def msg_upload_success(self):
         msgbox = QtWidgets.QMessageBox(self)
-        msgbox.question(self, "Firmware upload success",
-                        "Firmware update complete!", QtWidgets.QMessageBox.Yes)
+        msgbox.question(self, "Firmware upload success", "Firmware update complete!", QtWidgets.QMessageBox.Yes)
 
     def msg_connection_failed(self):
         msgbox = QtWidgets.QMessageBox(self)
@@ -960,49 +953,57 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setWindowTitle("Warning: Network")
-        msgbox.setText(
-            "Destination IP is unreachable: %s\nPlease check the network status." % dst_ip)
+        msgbox.setText("Destination IP is unreachable: %s\nPlease check the network status." % dst_ip)
         msgbox.exec_()
 
     def msg_reset(self):
-        self.statusbar.showMessage(' Reset device?')
+        self.statusbar.showMessage(" Reset device?")
         msgbox = QtWidgets.QMessageBox(self)
         btnReply = msgbox.question(
-            self, "Reset", "Do you really want to reset the device?", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            self,
+            "Reset",
+            "Do you really want to reset the device?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+        )
         if btnReply == QtWidgets.QMessageBox.Yes:
             self.do_reset()
 
     def msg_reset_seccess(self):
         msgbox = QtWidgets.QMessageBox(self)
-        msgbox.question(self, "Reset", "Reset complete!",
-                        QtWidgets.QMessageBox.Yes)
+        msgbox.question(self, "Reset", "Reset complete!", QtWidgets.QMessageBox.Yes)
 
     def msg_factory_seccess(self):
         msgbox = QtWidgets.QMessageBox(self)
-        msgbox.question(self, "Factory Reset",
-                        "Factory reset complete!", QtWidgets.QMessageBox.Yes)
+        msgbox.question(self, "Factory Reset", "Factory reset complete!", QtWidgets.QMessageBox.Yes)
 
     def msg_factory_setting(self):
         msgbox = QtWidgets.QMessageBox(self)
-        btnReply = msgbox.question(self, "Factory default settings",
-                                   "Do you really want to factory reset?\nAll settings will be initialized.",
-                                   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        btnReply = msgbox.question(
+            self,
+            "Factory default settings",
+            "Do you really want to factory reset?\nAll settings will be initialized.",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+        )
         if btnReply == QtWidgets.QMessageBox.Yes:
-            self.do_factory_reset('setting')
+            self.do_factory_reset("setting")
 
     def msg_factory_firmware(self):
         # factory reset firmware
         msgbox = QtWidgets.QMessageBox(self)
-        btnReply = msgbox.question(self, "Factory default firmware",
-                                   "Do you really want to factory reset the firmware?\nThe firmware and all settings will be initialized to factory default.",
-                                   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        btnReply = msgbox.question(
+            self,
+            "Factory default firmware",
+            "Do you really want to factory reset the firmware?\nThe firmware and all settings will be initialized to factory default.",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+        )
         if btnReply == QtWidgets.QMessageBox.Yes:
-            self.do_factory_reset('firmware')
+            self.do_factory_reset("firmware")
 
     def msg_exit(self):
         msgbox = QtWidgets.QMessageBox(self)
         btnReply = msgbox.question(
-            self, "Exit", "Do you really close this program?", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            self, "Exit", "Do you really close this program?", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
         if btnReply == QtWidgets.QMessageBox.Yes:
             self.close()
 
@@ -1010,29 +1011,28 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         button = getattr(self, btnname)
 
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(resource_path(iconfile)),
-                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(resource_path(iconfile)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         button.setIcon(icon)
         button.setIconSize(QtCore.QSize(40, 40))
         button.setFont(self.midfont)
 
     def set_btn_icon(self):
-        self.config_button_icon('gui/search_48.ico', 'btn_search')
-        self.config_button_icon('gui/setting_48.ico', 'btn_setting')
-        self.config_button_icon('gui/reset_48.ico', 'btn_reset')
-        self.config_button_icon('gui/factory_48.ico', 'btn_factory')
-        self.config_button_icon('gui/exit_48.ico', 'btn_exit')
+        self.config_button_icon("gui/search_48.ico", "btn_search")
+        self.config_button_icon("gui/setting_48.ico", "btn_setting")
+        self.config_button_icon("gui/reset_48.ico", "btn_reset")
+        self.config_button_icon("gui/factory_48.ico", "btn_factory")
+        self.config_button_icon("gui/exit_48.ico", "btn_exit")
 
     def font_init(self):
         self.midfont = QtGui.QFont()
-        self.midfont.setPixelSize(12)    # pointsize(9)
+        self.midfont.setPixelSize(12)  # pointsize(9)
 
         self.smallfont = QtGui.QFont()
         self.smallfont.setPixelSize(11)
 
         self.certfont = QtGui.QFont()
         self.certfont.setPixelSize(10)
-        self.certfont.setFamily('Consolas')
+        self.certfont.setFamily("Consolas")
 
     def gui_init(self):
         self.font_init()
@@ -1062,11 +1062,11 @@ class ThreadProgress(QtCore.QThread):
             self.msleep(15)
 
     def __del__(self):
-        print('thread: del')
+        print("thread: del")
         self.wait()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     wizwindow = WIZWindow()
     wizwindow.show()

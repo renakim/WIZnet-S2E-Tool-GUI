@@ -84,7 +84,7 @@ class WIZMSGHandler(QThread):
             for cmd in self.cmd_list:
                 # print('cmd[0]: %s, cmd[1]: %s' % (cmd[0], cmd[1]))
                 try:
-                    self.msg[self.size:] = str.encode(cmd[0])
+                    self.msg[self.size :] = str.encode(cmd[0])
                 except Exception as e:
                     print("[ERROR] makecommands() encode:", cmd[0], e)
                 self.size += len(cmd[0])
@@ -98,19 +98,19 @@ class WIZMSGHandler(QThread):
                     except Exception as e:
                         print("[ERROR] makecommands() decode:", cmd[0], cmd[1], e)
 
-                    self.msg[self.size:] = hex_string
+                    self.msg[self.size :] = hex_string
                     self.dest_mac = hex_string
                     # self.dest_mac = (int(cmd[1], 16)).to_bytes(6, byteorder='big') # Hexadecimal string to hexadecimal binary
                     # self.msg[self.size:] = self.dest_mac
                     self.size += 6
                 else:
                     try:
-                        self.msg[self.size:] = str.encode(cmd[1])
+                        self.msg[self.size :] = str.encode(cmd[1])
                     except Exception as e:
                         print("[ERROR] makecommands() encode param:", cmd[0], cmd[1], e)
                     self.size += len(cmd[1])
                 if "\r\n" not in cmd[1]:
-                    self.msg[self.size:] = str.encode("\r\n")
+                    self.msg[self.size :] = str.encode("\r\n")
                     self.size += 2
 
                     # print(self.size, self.msg)
