@@ -31,7 +31,7 @@ ASG_DEV = ["ASG200", "ASG210"]
 
 # ASG2X0 config
 # cmd_asg = ["MC", "VR", "MN", "IM", "OP", "LI", "SM", "GW", "DS", "WF", "WS", "WP"]
-cmd_asg = ["MC", "VR", "MN", "IM", "OP", "LI", "SM", "GW", "DS"]
+cmd_asg = ["MC", "VR", "MN", "UN", "ST", "IM", "OP", "LI", "SM", "GW", "DS", "LP", "RH", "RP"]
 
 
 def version_compare(version1, version2):

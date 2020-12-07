@@ -38,7 +38,7 @@ SOCK_OPEN_STATE = 3
 SOCK_CONNECTTRY_STATE = 4
 SOCK_CONNECT_STATE = 5
 
-VERSION = "V0.9.0 beta"
+VERSION = "V0.9.1 beta"
 
 
 def resource_path(relative_path):
@@ -129,6 +129,12 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         # State Changed Event
         self.ip_dhcp.clicked.connect(self.event_ip_alloc)
         self.ip_static.clicked.connect(self.event_ip_alloc)
+
+        # Event: OP mode
+        self.ch1_tcpclient.clicked.connect(self.event_opmode)
+        self.ch1_tcpserver.clicked.connect(self.event_opmode)
+        self.ch1_tcpmixed.clicked.connect(self.event_opmode)
+        self.ch1_udp.clicked.connect(self.event_opmode)
 
         self.pgbar = QtWidgets.QProgressBar()
         self.statusbar.addPermanentWidget(self.pgbar)
@@ -232,20 +238,32 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
         self.btn_setting.setEnabled(False)
 
         self.generalTab.setEnabled(False)
+        self.channel_tab.setEnabled(False)
 
     def object_config(self):
         self.selected_devinfo()
 
         # Enable buttons
-        self.btn_reset.setEnabled(True)
-        self.btn_factory.setEnabled(True)
+        # self.btn_reset.setEnabled(True)
+        # self.btn_factory.setEnabled(True)
         self.btn_setting.setEnabled(True)
 
         # Enable tab group
         self.generalTab.setEnabled(True)
         self.generalTab.setTabEnabled(0, True)
 
+        # Enable channel tab
+        self.channel_tab.setEnabled(True)
+        self.channel_tab_config()
+
         self.event_ip_alloc()
+        self.event_opmode()
+
+    def channel_tab_config(self):
+        # channel tab config
+        if self.curr_dev in ONE_PORT_DEV or "ASG" in self.curr_dev:
+            # self.channel_tab.removeTab(1)
+            self.channel_tab.setTabEnabled(0, True)
 
     # button click events
     def event_setting_clicked(self):
@@ -279,6 +297,16 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             self.subnet.setEnabled(True)
             self.gateway.setEnabled(True)
             self.dns_addr.setEnabled(True)
+
+    def event_opmode(self):
+        if self.ch1_tcpclient.isChecked() is True:
+            self.ch1_remote.setEnabled(True)
+        elif self.ch1_tcpserver.isChecked() is True:
+            self.ch1_remote.setEnabled(False)
+        elif self.ch1_tcpmixed.isChecked() is True:
+            self.ch1_remote.setEnabled(True)
+        elif self.ch1_udp.isChecked() is True:
+            self.ch1_remote.setEnabled(True)
 
     def sock_close(self):
         # 기존 연결 fin
@@ -554,10 +582,10 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             if "VR" in dev_data:
                 self.fw_version.setText(dev_data["VR"])
             # device info - channel 1
-            # if 'ST' in dev_data:
-            #     self.ch1_status.setText(dev_data['ST'])
-            # if 'UN' in dev_data:
-            #     self.ch1_uart_name.setText(dev_data['UN'])
+            if "ST" in dev_data:
+                self.ch1_status.setText(dev_data["ST"])
+            if "UN" in dev_data:
+                self.ch1_uart_name.setText(dev_data["UN"])
             # Network - general
             if "IM" in dev_data:
                 if dev_data["IM"] == "0":
@@ -573,6 +601,24 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
                 self.gateway.setText(dev_data["GW"])
             if "DS" in dev_data:
                 self.dns_addr.setText(dev_data["DS"])
+
+            # Network - channel 1
+            if "OP" in dev_data:
+                if dev_data["OP"] == "0":
+                    self.ch1_tcpclient.setChecked(True)
+                elif dev_data["OP"] == "1":
+                    self.ch1_tcpserver.setChecked(True)
+                elif dev_data["OP"] == "2":
+                    self.ch1_tcpmixed.setChecked(True)
+                elif dev_data["OP"] == "3":
+                    self.ch1_udp.setChecked(True)
+
+            if "LP" in dev_data:
+                self.ch1_localport.setText(dev_data["LP"])
+            if "RH" in dev_data:
+                self.ch1_remoteip.setText(dev_data["RH"])
+            if "RP" in dev_data:
+                self.ch1_remoteport.setText(dev_data["RP"])
 
             # WiFi Configuration
 
@@ -616,6 +662,19 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             elif self.ip_dhcp.isChecked() is True:
                 setcmd["IM"] = "1"
             setcmd["DS"] = self.dns_addr.text()
+
+            # Network - channel 1
+            if self.ch1_tcpclient.isChecked() is True:
+                setcmd["OP"] = "0"
+            elif self.ch1_tcpserver.isChecked() is True:
+                setcmd["OP"] = "1"
+            elif self.ch1_tcpmixed.isChecked() is True:
+                setcmd["OP"] = "2"
+            elif self.ch1_udp.isChecked() is True:
+                setcmd["OP"] = "3"
+            setcmd["LP"] = self.ch1_localport.text()
+            setcmd["RH"] = self.ch1_remoteip.text()
+            setcmd["RP"] = self.ch1_remoteport.text()
         except Exception as e:
             self.logging.error(e)
 
