@@ -1535,13 +1535,13 @@ Reset</string>
                 <property name="minimumSize">
                  <size>
                   <width>200</width>
-                  <height>80</height>
+                  <height>50</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>240</width>
-                  <height>150</height>
+                  <height>50</height>
                  </size>
                 </property>
                 <property name="title">
@@ -1557,30 +1557,6 @@ Reset</string>
                  <property name="verticalSpacing">
                   <number>2</number>
                  </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="ch1_status_label">
-                   <property name="minimumSize">
-                    <size>
-                     <width>90</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>90</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>맑은 고딕</family>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Status:</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="1">
                   <widget class="QLineEdit" name="ch1_status">
                    <property name="minimumSize">
@@ -1625,8 +1601,8 @@ Reset</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="ch1_uart_name_label">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="ch1_status_label">
                    <property name="minimumSize">
                     <size>
                      <width>90</width>
@@ -1645,48 +1621,7 @@ Reset</string>
                     </font>
                    </property>
                    <property name="text">
-                    <string>Serial interface:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="ch1_uart_name">
-                   <property name="minimumSize">
-                    <size>
-                     <width>100</width>
-                     <height>22</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>맑은 고딕</family>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="inputMask">
-                    <string notr="true"/>
-                   </property>
-                   <property name="text">
-                    <string notr="true"/>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                   <property name="placeholderText">
-                    <string notr="true"/>
-                   </property>
-                   <property name="clearButtonEnabled">
-                    <bool>false</bool>
+                    <string>Status:</string>
                    </property>
                   </widget>
                  </item>
@@ -1834,7 +1769,7 @@ Reset</string>
                 <property name="minimumSize">
                  <size>
                   <width>240</width>
-                  <height>30</height>
+                  <height>50</height>
                  </size>
                 </property>
                 <property name="maximumSize">
@@ -1851,7 +1786,10 @@ Reset</string>
                   <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>9</number>
+                  <number>5</number>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>2</number>
                  </property>
                  <item row="0" column="0">
                   <widget class="QLineEdit" name="ch1_localport">
@@ -1891,13 +1829,13 @@ Reset</string>
                 <property name="minimumSize">
                  <size>
                   <width>240</width>
-                  <height>90</height>
+                  <height>95</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>300</width>
-                  <height>90</height>
+                  <height>120</height>
                  </size>
                 </property>
                 <property name="font">
@@ -1908,121 +1846,114 @@ Reset</string>
                 <property name="title">
                  <string>Remote host / Port</string>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_38">
+                <layout class="QGridLayout" name="gridLayout_13">
                  <item row="0" column="0">
-                  <layout class="QGridLayout" name="gridLayout_36">
-                   <property name="spacing">
-                    <number>2</number>
-                   </property>
-                   <item row="1" column="0">
-                    <layout class="QGridLayout" name="gridLayout_35">
-                     <item row="0" column="0">
-                      <widget class="QLabel" name="label_141">
-                       <property name="minimumSize">
-                        <size>
-                         <width>75</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>75</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="font">
-                        <font>
-                         <family>맑은 고딕</family>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Remote port</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="0" column="1">
-                      <widget class="QLineEdit" name="ch1_remoteport">
-                       <property name="minimumSize">
-                        <size>
-                         <width>115</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>115</width>
-                         <height>16777215</height>
-                        </size>
-                       </property>
-                       <property name="font">
-                        <font>
-                         <family>맑은 고딕</family>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>5000</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
+                  <layout class="QGridLayout" name="gridLayout_34">
                    <item row="0" column="0">
-                    <layout class="QGridLayout" name="gridLayout_34">
-                     <item row="0" column="0">
-                      <widget class="QLabel" name="label_181">
-                       <property name="minimumSize">
-                        <size>
-                         <width>75</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>75</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="font">
-                        <font>
-                         <family>맑은 고딕</family>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Remote host</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="0" column="1">
-                      <widget class="QLineEdit" name="ch1_remoteip">
-                       <property name="minimumSize">
-                        <size>
-                         <width>115</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>115</width>
-                         <height>22</height>
-                        </size>
-                       </property>
-                       <property name="font">
-                        <font>
-                         <family>맑은 고딕</family>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>192.168.11.3</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
+                    <widget class="QLabel" name="label_181">
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>75</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>맑은 고딕</family>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Remote host</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="ch1_remoteip">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>120</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>맑은 고딕</family>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="1" column="0">
+                  <layout class="QGridLayout" name="gridLayout_35">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_141">
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>75</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>맑은 고딕</family>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Remote port</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="ch1_remoteport">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>120</width>
+                       <height>22</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>맑은 고딕</family>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>

@@ -38,7 +38,7 @@ SOCK_OPEN_STATE = 3
 SOCK_CONNECTTRY_STATE = 4
 SOCK_CONNECT_STATE = 5
 
-VERSION = "V0.9.1 beta"
+VERSION = "V0.9.2 beta"
 
 
 def resource_path(relative_path):
@@ -258,6 +258,9 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
         self.event_ip_alloc()
         self.event_opmode()
+
+        # temp
+        self.groupbox_wifi.setDisabled(True)
 
     def channel_tab_config(self):
         # channel tab config
@@ -574,7 +577,7 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
 
     # TODO: decode exception handling
     def fill_devinfo(self, dev_data):
-        print("fill_devinfo", dev_data)
+        # print("fill_devinfo", dev_data)
         try:
             # device info (RO)
             if "MN" in dev_data:
@@ -584,8 +587,8 @@ class WIZWindow(QtWidgets.QMainWindow, main_window):
             # device info - channel 1
             if "ST" in dev_data:
                 self.ch1_status.setText(dev_data["ST"])
-            if "UN" in dev_data:
-                self.ch1_uart_name.setText(dev_data["UN"])
+            # if "UN" in dev_data:
+            #     self.ch1_uart_name.setText(dev_data["UN"])
             # Network - general
             if "IM" in dev_data:
                 if dev_data["IM"] == "0":
